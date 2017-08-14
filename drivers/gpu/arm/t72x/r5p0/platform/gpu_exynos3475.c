@@ -51,12 +51,12 @@ void __iomem *g3d1_outstanding_regs;
 /*  clk,vol,abb,min,max,down stay, time, pm_qos mem,
 	pm_qos int, pm_qos cpu_kfc_min, pm_qos cpu_egl_max */
 static gpu_dvfs_info gpu_dvfs_table_default[] = {
-	{800, 1100000, 0,  99, 100, 1, 0, 728000, 400000, 1404000, 1495000},
-	{667, 1100000, 0,  98,  99, 1, 0, 666000, 400000, 1404000, 1495000},
-	{533, 1000000, 0,  97,  98, 1, 0, 559000, 333000, 1300000, 1495000},
+	{800, 1100000, 0,  99, 100, 1, 0, 728000, 400000, 1495000, 1495000},
+	{667, 1100000, 0,  98,  99, 1, 0, 666000, 400000, 1495000, 1495000},
+	{533, 1000000, 0,  97,  98, 1, 0, 559000, 333000, 1495000, 1495000},
 	{350,  900000, 0,  78,  85, 1, 0, 413000, 333000,  806000, 1495000},
 	{266,  850000, 0,  78,  85, 1, 0, 413000, 275000,  403000, 1495000},
-	{160,  850000, 0,  78,  85, 1, 0, 413000, 275000,  403000, 1495000},
+	{160,  850000, 0,  78,  85, 1, 0, 413000, 275000,  	0, 1495000},
 };
 
 static int mif_min_table[] = {
@@ -85,7 +85,7 @@ static gpu_attribute gpu_config_attributes[] = {
 	{GPU_GOVERNOR_INTERACTIVE_HIGHSPEED_CLOCK, 667},
 	{GPU_GOVERNOR_INTERACTIVE_HIGHSPEED_LOAD, 95},
 	{GPU_GOVERNOR_INTERACTIVE_HIGHSPEED_DELAY, 0},
-	{GPU_DEFAULT_VOLTAGE, 850000},
+	{GPU_DEFAULT_VOLTAGE, 900000},
 	{GPU_COLD_MINIMUM_VOL, 0},
 	{GPU_VOLTAGE_OFFSET_MARGIN, 37500},
 	{GPU_TMU_CONTROL, 1},

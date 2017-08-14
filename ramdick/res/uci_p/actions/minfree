@@ -1,6 +1,5 @@
-MM=/res/uci_p/actions/lmk_prof;
 BB=/res/busybox;
-
+MM=/res/uci_p;
 P=/sys/module/lowmemorykiller/parameters/minfree;
 
 PERM=`$BB stat -c %a $P`;
@@ -45,42 +44,42 @@ write() {
 
 #Profiles
 Low(){
-	MINFREE="1536,2048,2560,8192,16384,20480";
+	minfree="1536,2048,2560,8192,16384,20480";
 	COST="64";
 }
 
 Medium(){
-	MINFREE="1536,2048,4096,16384,18432,20480";
+	minfree="1536,2048,4096,16384,18432,20480";
 	COST="48";
 }
 
 Default(){
-	MINFREE="1536,2048,4096,16384,28672,32768";
+	minfree="1536,2048,4096,16384,28672,32768";
 	COST="32";
 }
 
 Aggressive(){
-	MINFREE="2048,4096,4096,16384,32768,49152";
+	minfree="2048,4096,4096,16384,32768,49152";
 	COST="16";
 }
 
 Exterminate(){
-	MINFREE="4096,8192,16384,19200,49152,65536";
+	minfree="4096,8192,16384,19200,49152,65536";
 	COST="16";
 }
 
 if [ "$1" == "profile" ]; then
 	if [[ ! -z $2 ]]; then
-		$BB echo $2 > $MM;
+		$BB echo $2 > $MM/files/lmk_prof;
 		
 		if [ $2 != "Custom" ]; then
 			$2;
-			$BB echo "$MINFREE" > $P;
+			$BB echo "$minfree" > $P;
 			$BB echo "$COST" > /sys/module/lowmemorykiller/parameters/cost;
 		fi;
 	fi;
 	
-	$BB echo `$BB cat $MM;`
+	$BB echo `$BB cat $MM/files/lmk_prof;`
 else
 	if [[ ! -z $2 ]]; then
 		write $1 $2;

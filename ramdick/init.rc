@@ -1370,8 +1370,13 @@ on property:service.vpnclientd.enable=0
 	service reactived /system/bin/reactived
 	class late_start
  
+
 # start init.d support
+
 service kernel-init /sbin/kernel-init.sh
+
 	class main
+
 	user root
+
 	oneshot
