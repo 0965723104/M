@@ -112,186 +112,6 @@
 		};
 	};
 
-	input_booster {
-		status = "okay";
-		compatible = "input_booster";
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		booster_key@1 {
-			input_booster,label = "KEY";
-			input_booster,type = <0>;	/* BOOSTER_DEVICE_KEY */
-
-			input_booster,levels = <1>;
-
-			/* Frequency table */
-			/* for level	:	1_Head */
-			input_booster,cpu_freqs = <1105000>;
-			input_booster,hmp_boost = <0>;
-			input_booster,kfc_freqs = <0>;
-			input_booster,mif_freqs = <0>;
-			input_booster,int_freqs = <0>;
-
-			/* Time table */
-			input_booster,head_times = <300>;
-			input_booster,tail_times = <300>;
-			input_booster,phase_times = <0>;
-		};
-		booster_key@2 {
-			input_booster,label = "TOUCHKEY";
-			input_booster,type = <1>;	/* BOOSTER_DEVICE_TOUCHKEY */
-
-			input_booster,levels = <1>;
-
-			/* Frequency table */
-			/* for level	:	1_Head */
-			input_booster,cpu_freqs = <1105000>;
-			input_booster,hmp_boost = <0>;
-			input_booster,kfc_freqs = <0>;
-			input_booster,mif_freqs = <0>;
-			input_booster,int_freqs = <0>;
-
-			/* Time table */
-			input_booster,head_times = <0>;
-			input_booster,tail_times = <200>;
-			input_booster,phase_times = <0>;
-		};
-		booster_key@3 {
-			input_booster,label = "TOUCH";
-			input_booster,type = <2>;	/* BOOSTER_DEVICE_TOUCH */
-
-			input_booster,levels = <1 2 3>;
-
-			/* Frequency table */
-			/* for level	:	1_Head, 2_Head, 2_Tail */
-			input_booster,cpu_freqs = <1105000 1105000 806000>;
-			input_booster,hmp_boost = <0 0 0>;
-			input_booster,kfc_freqs = <0 0 0>;
-			input_booster,mif_freqs = <0 0 0>;
-			input_booster,int_freqs = <0 0 0>;
-
-			/* Time table */
-			input_booster,head_times = <200 200 0>;
-			input_booster,tail_times = <300 300 0>;
-			input_booster,phase_times = <0 0 0>;
-		};
-		booster_key@4 { // Input Booster +
-			input_booster,label = "MULTITOUCH";
-			input_booster,type = <3>;	/* BOOSTER_DEVICE_MULTITOUCH */
-
-			input_booster,levels = <1 2>;
-
-			/* Frequency table */
-			/* for level	:	1_Head 2_Tail*/
-			input_booster,cpu_freqs = <1105000 1105000>;
-			input_booster,hmp_boost = <0 0>;
-			input_booster,kfc_freqs = <0 0>;
-			input_booster,mif_freqs = <0 0>;
-			input_booster,int_freqs = <0 0>;
-
-			/* Time table */
-			input_booster,head_times = <1000 1000>;
-			input_booster,tail_times = <500 500>;
-			input_booster,phase_times = <0 0>;
-		};
-		booster_key@5 {
-			input_booster,label = "KEYBOARD";
-			input_booster,type = <4>;	/* BOOSTER_DEVICE_KEYBOARD */
-
-			input_booster,levels = <1 2>;
-
-			/* Frequency table */
-			/* for level	:	1_Head 2_Tail*/
-			input_booster,cpu_freqs = <1105000 1105000>;
-			input_booster,hmp_boost = <0 0>;
-			input_booster,kfc_freqs = <0 0>;
-			input_booster,mif_freqs = <0 0>;
-			input_booster,int_freqs = <0 0>;
-
-			/* Time table */
-			input_booster,head_times = <200 200>;
-			input_booster,tail_times = <0 0>;
-			input_booster,phase_times = <0 0>;
-		};
-		booster_key@6 {
-			input_booster,label = "MOUSE";
-			input_booster,type = <5>;	/* BOOSTER_DEVICE_MOUSE */
-
-			input_booster,levels = <1 2>;
-
-			/* Frequency table */
-			/* for level	:	1_Head 2_Tail*/
-			input_booster,cpu_freqs = <1105000 806000>;
-			input_booster,hmp_boost = <0 0>;
-			input_booster,kfc_freqs = <0 0>;
-			input_booster,mif_freqs = <0 0>;
-			input_booster,int_freqs = <0 0>;
-
-			/* Time table */
-			input_booster,head_times = <200 200>;
-			input_booster,tail_times = <300 300>;
-			input_booster,phase_times = <0 0>;
-		};
-		booster_key@7 {
-			input_booster,label = "MOUSE WHEEL";
-			input_booster,type = <6>;	/* BOOSTER_DEVICE_MOUSE */
-
-			input_booster,levels = <1 2>;
-
-			/* Frequency table */
-			/* for level	:	1_Head 2_Tail*/
-			input_booster,cpu_freqs = <1105000 0>;
-			input_booster,hmp_boost = <0 0>;
-			input_booster,kfc_freqs = <0 0>;
-			input_booster,mif_freqs = <0 0>;
-			input_booster,int_freqs = <0 0>;
-
-			/* Time table */
-			input_booster,head_times = <200 0>;
-			input_booster,tail_times = <0 0>;
-			input_booster,phase_times = <0 0>;
-		};
-		booster_key@8 {
-			input_booster,label = "PEN HOVER";
-			input_booster,type = <7>;	/* BOOSTER_DEVICE_MOUSE */
-
-			input_booster,levels = <1 2>;
-
-			/* Frequency table */
-			/* for level	:	1_Head 2_Tail*/
-			input_booster,cpu_freqs = <1105000 806000>;
-			input_booster,hmp_boost = <0 0>;
-			input_booster,kfc_freqs = <0 0>;
-			input_booster,mif_freqs = <0 0>;
-			input_booster,int_freqs = <0 0>;
-
-			/* Time table */
-			input_booster,head_times = <200 200>;
-			input_booster,tail_times = <300 300>;
-			input_booster,phase_times = <0 0>;
-		};
-		booster_key@9 {
-			input_booster,label = "GAMEPAD";
-			input_booster,type = <8>;	/* BOOSTER_DEVICE_GAMEPAD */
-
-			input_booster,levels = <1 2>;
-
-			/* Frequency table */
-			/* for level	:	1_Head 2_Tail*/
-			input_booster,cpu_freqs = <1105000 806000>;
-			input_booster,hmp_boost = <0 0>;
-			input_booster,kfc_freqs = <0 0>;
-			input_booster,mif_freqs = <0 0>;
-			input_booster,int_freqs = <0 0>;
-
-			/* Time table */
-			input_booster,head_times = <200 200>;
-			input_booster,tail_times = <300 300>;
-			input_booster,phase_times = <0 0>;
-		}; // Input Booster -
-		/* If you need to add new key type, add it this position */
-	};
-
 	i2c@13840000 {
 		samsung,i2c-sda-delay = <100>;
 		samsung,i2c-max-bus-freq = <400000>;
@@ -381,7 +201,7 @@
 	hsi2c@104C0000 {
         status = "okay";
 		samsung,hs-mode;
-		clock-frequency = <1500000>;
+		clock-frequency = <1700000>;
 		samsung,hsi2c-batcher;
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -562,9 +382,10 @@
 	};
 
 	s2803x: s2803x@148C0000 {
-		pinctrl-names = "default", "idle";
+		pinctrl-names = "default", "idle", "bt-idle";
 		pinctrl-0 = <&i2s_pmic_bus &i2s_bt_bus>;
 		pinctrl-1 = <&i2s_pmic_bus_idle &i2s_bt_bus_idle>;
+		pinctrl-2 = <&i2s_pmic_bus &i2s_bt_bus_idle>;
 		bck-mcko-mode;
 		status = "okay";
 	};
@@ -979,6 +800,7 @@
 		status = "okay";
 		samsung,i2c-sda-delay = <100>;
 		samsung,i2c-max-bus-freq = <400000>;
+		samsung,reset-before-trans;
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&hs_i2c7_bus>;
@@ -1010,6 +832,7 @@
 		status = "okay";
 		samsung,i2c-sda-delay = <100>;
 		samsung,i2c-max-bus-freq = <400000>;
+		samsung,reset-before-trans;
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&hs_i2c8_bus>;
@@ -1272,6 +1095,10 @@
 
 		mif,ap_clk_table = <
 			/* khz */
+			1703000
+			1599000
+			1495000
+			1404000
 			1300000
 			1196000
 			1105000
@@ -1282,6 +1109,8 @@
 			598000
 			507000
 			403000
+			299000
+			195000
 			>;
 
 		mif,mif_clk_table = <
