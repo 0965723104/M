@@ -301,7 +301,7 @@ struct samsung_pll_rate_table table_bus[] = {
 
 struct samsung_pll_rate_table table_g3d[] = {
 		/* rate            p,      m,      s,     k */
-	{ 800000000U,     13,    400,      0,     0 }, /* L0 */
+	{ 840000000U,     13,    420,      0,     0 }, /* L0 */
 	{ 734000000U,     13,    367,      0,     0 }, /* L1 */
 	{ 667000000U,     12,    308,      0,     0 }, /* L2 forget */ 
 	{ 600000000U,     13,    300,      0,     0 }, /* L3 */

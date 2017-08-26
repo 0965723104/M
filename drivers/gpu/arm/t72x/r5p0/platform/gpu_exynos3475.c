@@ -51,8 +51,8 @@ void __iomem *g3d1_outstanding_regs;
 /*  clk,vol,abb,min,max,down stay, time, pm_qos mem,
 	pm_qos int, pm_qos cpu_kfc_min, pm_qos cpu_egl_max */
 static gpu_dvfs_info gpu_dvfs_table_default[] = {
-	{800, 1100000, 0,  99, 100, 1, 0, 666000, 334000, 1300000, 1700000},
-	{667, 1100000, 0,  98,  99, 1, 0, 666000, 333000, 1300000, 1700000},
+	{840, 1100000, 0,  99, 100, 1, 0, 666000, 400000, 1300000, 1700000},
+	{667, 1100000, 0,  98,  99, 1, 0, 666000, 400000, 1300000, 1700000},
 	{533, 1000000, 0,  97,  98, 1, 0, 559000, 333000, 1300000, 1700000},
 	{350,  900000, 0,  78,  85, 1, 0, 413000, 275000,  806000, 1700000},
 	{266,  850000, 0,  78,  85, 1, 0, 413000, 275000,  403000, 1700000},
@@ -64,8 +64,8 @@ static int mif_min_table[] = {
 };
 
 static gpu_attribute gpu_config_attributes[] = {
-	{GPU_MAX_CLOCK, 800},
-	{GPU_MAX_CLOCK_LIMIT, 800},
+	{GPU_MAX_CLOCK, 840},
+	{GPU_MAX_CLOCK_LIMIT, 840},
 	{GPU_MIN_CLOCK, 266},
 	{GPU_DVFS_START_CLOCK, 266},
 	{GPU_DVFS_BL_CONFIG_CLOCK, 266},
@@ -89,7 +89,7 @@ static gpu_attribute gpu_config_attributes[] = {
 	{GPU_COLD_MINIMUM_VOL, 0},
 	{GPU_VOLTAGE_OFFSET_MARGIN, 37500},
 	{GPU_TMU_CONTROL, 0},
-	{GPU_TEMP_THROTTLING1, 800},
+	{GPU_TEMP_THROTTLING1, 840},
 	{GPU_TEMP_THROTTLING2, 667},
 	{GPU_TEMP_THROTTLING3, 533},
 	{GPU_TEMP_THROTTLING4, 350},
@@ -106,7 +106,7 @@ static gpu_attribute gpu_config_attributes[] = {
 	{GPU_HWCNT_GPR, 1},
 	{GPU_HWCNT_DUMP_PERIOD, 50}, /* ms */
 	{GPU_HWCNT_CHOOSE_JM , 0},
-	{GPU_HWCNT_CHOOSE_SHADER , 0xF8},
+	{GPU_HWCNT_CHOOSE_SHADER , 0x5FF},
 	{GPU_HWCNT_CHOOSE_TILER , 0},
 	{GPU_HWCNT_CHOOSE_L3_CACHE , 0},
 	{GPU_HWCNT_CHOOSE_MMU_L2 , 0},
@@ -116,9 +116,9 @@ static gpu_attribute gpu_config_attributes[] = {
 	{GPU_PERF_GATHERING, 0},
 	{GPU_PMQOS_INT_DISABLE, 0},
 	{GPU_PMQOS_MIF_MAX_CLOCK, 666000},
-	{GPU_PMQOS_MIF_MAX_CLOCK_BASE, 800},
+	{GPU_PMQOS_MIF_MAX_CLOCK_BASE, 840},
 #ifdef CONFIG_EXYNOS_CL_DVFS_G3D
-	{GPU_CL_DVFS_START_BASE, 667},
+	{GPU_CL_DVFS_START_BASE, 840},
 #endif
 	{GPU_DEBUG_LEVEL, DVFS_WARNING},
 	{GPU_TRACE_LEVEL, TRACE_ALL},

@@ -95,7 +95,7 @@ struct devfreq_clk_states aclk_bus0_333_bus_pll_list = {
 };
 
 struct devfreq_clk_info dout_aclk_bus0_333[] = {
-	{INT_LV0,	333 * MHZ,	0,	&aclk_bus0_333_media_pll_list},
+	{INT_LV0,	400 * MHZ,	0,	&aclk_bus0_333_media_pll_list},
 	{INT_LV1,	333 * MHZ,	0,	&aclk_bus0_333_media_pll_list},
 	{INT_LV2,	276 * MHZ,	0,	&aclk_bus0_333_bus_pll_list},
 };
@@ -120,7 +120,7 @@ struct devfreq_clk_states aclk_mfcmscl_333_bus_pll_list = {
 };
 
 struct devfreq_clk_info dout_aclk_mfcmscl_333[] = {
-	{INT_LV0,	333 * MHZ,	0,	&aclk_mfcmscl_333_media_pll_list},
+	{INT_LV0,	400 * MHZ,	0,	&aclk_mfcmscl_333_media_pll_list},
 	{INT_LV1,	333 * MHZ,	0,	&aclk_mfcmscl_333_media_pll_list},
 	{INT_LV2,	276 * MHZ,	0,	&aclk_mfcmscl_333_bus_pll_list},
 };
@@ -204,7 +204,7 @@ struct devfreq_clk_info dout_aclk_isp_300[] = {
 };
 
 struct devfreq_opp_table devfreq_int_opp_list[] = {
-	{INT_LV0, 334000, 1175000},
+	{INT_LV0, 400000, 1175000},
 	{INT_LV1, 333000, 1125000},
 	{INT_LV2, 275000, 1025000},
 };

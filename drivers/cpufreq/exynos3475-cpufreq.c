@@ -78,37 +78,37 @@ static unsigned int exynos3475_clkdiv_table[9][CPUFREQ_LEVEL_END] = {
 #endif
 static unsigned int exynos3475_apll_pms_table[CPUFREQ_LEVEL_END] = {
 	/* MDIV | PDIV | SDIV */
-	/* APLL FOUT L0: 1700MHz */
+	/* APLL FOUT : 1700MHz */
 	PLL2555X_PMS(262, 4, 0),
-	/* APLL FOUT L0: 1600MHz */
+	/* APLL FOUT : 1600MHz */
 	PLL2555X_PMS(246, 4, 0),
-	/* APLL FOUT L0: 1500MHz */
+	/* APLL FOUT : 1500MHz */
 	PLL2555X_PMS(230, 4, 0),
-	/* APLL FOUT L1: 1400MHz */
+	/* APLL FOUT : 1400MHz */
 	PLL2555X_PMS(216, 4, 0),
-	/* APLL FOUT L2: 1300MHz */
+	/* APLL FOUT : 1300MHz */
 	PLL2555X_PMS(200, 4, 0),
-	/* APLL FOUT L3: 1200MHz */
+	/* APLL FOUT : 1200MHz */
 	PLL2555X_PMS(368, 4, 1),
-	/* APLL FOUT L4: 1100MHz */
+	/* APLL FOUT  1100MHz */
 	PLL2555X_PMS(340, 4, 1),
-	/* APLL FOUT L5: 1000MHz */
+	/* APLL FOUT : 1000MHz */
 	PLL2555X_PMS(308, 4, 1),
-	/* APLL FOUT L6:  900MHz */
+	/* APLL FOUT :  900MHz */
 	PLL2555X_PMS(276, 4, 1),
-	/* APLL FOUT L7:  800MHz */
+	/* APLL FOUT :  800MHz */
 	PLL2555X_PMS(248, 4, 1),
-	/* APLL FOUT L8:  700MHz */
+	/* APLL FOUT :  700MHz */
 	PLL2555X_PMS(216, 4, 1),
-	/* APLL FOUT L9:  600MHz */
+	/* APLL FOUT :  600MHz */
 	PLL2555X_PMS(368, 4, 2),
-	/* APLL FOUT L10:  500MHz */
+	/* APLL FOUT :  500MHz */
 	PLL2555X_PMS(312, 4, 2),
-	/* APLL FOUT L11:  400MHz */
+	/* APLL FOUT :  400MHz */
 	PLL2555X_PMS(248, 4, 2),
-	/* APLL FOUT L12:  300MHz */
+	/* APLL FOUT :  300MHz */
 	PLL2555X_PMS(368, 4, 3),
-	/* APLL FOUT L13:  200Mhz */
+	/* APLL FOUT :  200Mhz */
 	PLL2555X_PMS(240, 4, 3),
 };
 
@@ -116,22 +116,22 @@ static unsigned int exynos3475_apll_pms_table[CPUFREQ_LEVEL_END] = {
  * ASV group voltage table
  */
 static const unsigned int asv_voltage_3475[CPUFREQ_LEVEL_END] = {
-	1250000,	/* L0  1700 */
-	1225000,	/* L0  1600 */
-	1200000,	/* L0  1500 */
-	1175000,	/* L1  1400 */
-	1150000,	/* L2  1300 */
-	1125000,	/* L3  1200 */
-	1100000,	/* L4  1100 */
-	1075000,	/* L5  1000 */
-	1050000,	/* L6   900 */
-	1025000,	/* L7   800 */
-	1000000,	/* L8   700 */
-	 975000,	/* L9   600 */
-	 950000,	/* L10  500 */
-	 925000,	/* L11  400 */
-	 900000,	/* L12  300 */
-	 875000,	/* L13  200 */
+	1250000,	/*   1700 */
+	1225000,	/*   1600 */
+	1200000,	/*   1500 */
+	1175000,	/*  1400 */
+	1150000,	/*   1300 */
+	1125000,	/*  1200 */
+	1100000,	/*  1100 */
+	1075000,	/*   1000 */
+	1050000,	/*    900 */
+	1025000,	/*    800 */
+	1000000,	/*    700 */
+	 975000,	/*    600 */
+	 950000,	/*   500 */
+	 925000,	/*   400 */
+	 900000,	/*   300 */
+	 875000,	/*   200 */
 };
 
 /* Minimum memory throughput in megabytes per second */
@@ -250,7 +250,7 @@ static void __init set_volt_table(void)
 	exynos3475_default_volt_table[i] = exynos3475_volt_table[i];
 	}
 
-	max_support_idx = L2;	/* 1.5GHz */
+	max_support_idx = L1;	/* 1.6GHz */
 	min_support_idx = L13;	/* 500mhz */
 	pr_info("CPUFREQ : max_freq : L%d %u khz\n", max_support_idx,
 		exynos3475_freq_table[max_support_idx].frequency);
