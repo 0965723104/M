@@ -45,7 +45,7 @@ static unsigned int exynos3475_default_volt_table[CPUFREQ_LEVEL_END];
 
 static struct cpufreq_frequency_table exynos3475_freq_table[] = {
 	{L0,  1703 * 1000},
-	{L1,  1599 * 1000},
+	{L1,  1573 * 1000},
 	{L2,  1495 * 1000},
 	{L3,  1404 * 1000},
 	{L4,  1300 * 1000},
@@ -81,7 +81,7 @@ static unsigned int exynos3475_apll_pms_table[CPUFREQ_LEVEL_END] = {
 	/* APLL FOUT : 1700MHz */
 	PLL2555X_PMS(262, 4, 0),
 	/* APLL FOUT : 1600MHz */
-	PLL2555X_PMS(246, 4, 0),
+	PLL2555X_PMS(242, 4, 0),
 	/* APLL FOUT : 1500MHz */
 	PLL2555X_PMS(230, 4, 0),
 	/* APLL FOUT : 1400MHz */
@@ -116,8 +116,8 @@ static unsigned int exynos3475_apll_pms_table[CPUFREQ_LEVEL_END] = {
  * ASV group voltage table
  */
 static const unsigned int asv_voltage_3475[CPUFREQ_LEVEL_END] = {
-	1250000,	/*   1700 */
-	1225000,	/*   1600 */
+	1400000,	/*   1700 */
+	1250000,	/*   1600 */
 	1200000,	/*   1500 */
 	1175000,	/*  1400 */
 	1150000,	/*   1300 */
@@ -143,8 +143,8 @@ static int exynos3475_bus_table[CPUFREQ_LEVEL_END] = {
 	666000,		/* 1.3 GHz */
 	666000,		/* 1.2 GHz */
 	666000,		/* 1.1 GHz */
-	666000,		/* 1.0 GHz */
-	559000,		/* 900 MHz */
+	559000,		/* 1.0 GHz */
+	413000,		/* 900 MHz */
 	413000,		/* 800 MHz */
 	413000,		/* 700 MHz */
 	413000,		/* 600 MHz */
@@ -250,7 +250,7 @@ static void __init set_volt_table(void)
 	exynos3475_default_volt_table[i] = exynos3475_volt_table[i];
 	}
 
-	max_support_idx = L1;	/* 1.6GHz */
+	max_support_idx = L1;	/* 1.GHz */
 	min_support_idx = L13;	/* 500mhz */
 	pr_info("CPUFREQ : max_freq : L%d %u khz\n", max_support_idx,
 		exynos3475_freq_table[max_support_idx].frequency);
