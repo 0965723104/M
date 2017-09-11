@@ -1,7 +1,10 @@
-
+BB=/res/busybox;
+if [ "$($BB mount | grep rootfs | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
 case $1 in
 gpu_gov)
-  P=/data/media/0values/gpu_gov
+  P=/res/uci_p/files/gpu_gov
   if [ ! -z $2 ]; then
   if [ $2 == Default ]; then
     echo "Default" > $P
@@ -28,3 +31,5 @@ gpu_gov)
   fi
   ;;
 esac
+
+$BB mount -t rootfs -o remount,ro rootfs;

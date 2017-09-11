@@ -1,4 +1,5 @@
 #!/system/bin/sh
+
 UCI_P=/res/uci_p;
 UCI_CONFIG=$UCI_P/config.json;
 UCI_ACTION=$UCI_P/actions/;

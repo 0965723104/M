@@ -1,17 +1,21 @@
 BB=/res/busybox;
-MM=/res/uci_p;
+
+if [ "$($BB mount | grep rootfs | grep -c ro)" -eq "1" ]; then
+	$BB mount -o remount,rw /;
+fi;
+
 P=/sys/module/lowmemorykiller/parameters/minfree;
 
-PERM=`$BB stat -c %a $P`;
-$BB test $PERM -lt "664" && $BB chmod 664 $P 2> /dev/null;
+PERM=$($BB stat -c %a $P);
+$BB test "$PERM" -lt "666" && $BB chmod 666 $P 2> /dev/null;
 
 #Read/Write
 read() {
 	VALUE=0;
-	NOW=`$BB cat $P`;
+	NOW=$($BB cat $P);
 	for LMK in ${NOW//,/ }; do
 		VALUE=$(($VALUE+1));
-		if [ "$VALUE" == $1 ]; then
+		if [ "$VALUE" == "$1" ]; then
 			$BB echo $((LMK / 256));
 			return
 		fi;
@@ -22,10 +26,10 @@ write() {
 	SET=$2;
 	LMKARR="";
 	VALUE=0;
-	NOW=`$BB cat $P`;
+	NOW=$($BB cat $P);
 	for LMK in ${NOW//,/ }; do
 		VALUE=$(($VALUE+1));
-		if [ "$VALUE" == $1 ]; then
+		if [ "$VALUE" == "$1" ]; then
 			if [ "$VALUE" == 1 ]; then
 				LMKARR="$((SET * 256))";
 			else
@@ -39,51 +43,55 @@ write() {
 			fi;
 		fi;
 	done;
-	$BB echo ${LMKARR// /,} > $P 2> /dev/null;
+	$BB echo "${LMKARR// /,}" > $P 2> /dev/null;
 }
 
 #Profiles
 Low(){
-	minfree="1536,2048,2560,8192,16384,20480";
+	MINFREE="1536,2048,2560,8192,16384,20480";
 	COST="64";
 }
 
 Medium(){
-	minfree="1536,2048,4096,16384,18432,20480";
+	MINFREE="1536,2048,4096,16384,18432,20480";
 	COST="48";
 }
 
+Custom(){
+	MINFREE="1536,2048,4096,16384,28672,32768";
+	COST="32";
+}
+
 Default(){
-	minfree="1536,2048,4096,16384,28672,32768";
+	MINFREE="12288,15360,18432,21504,24576,30720";
 	COST="32";
 }
 
 Aggressive(){
-	minfree="2048,4096,4096,16384,32768,49152";
+	MINFREE="2048,4096,4096,16384,32768,49152";
 	COST="16";
 }
 
 Exterminate(){
-	minfree="4096,8192,16384,19200,49152,65536";
+	MINFREE="4096,8192,16384,19200,49152,65536";
 	COST="16";
 }
 
 if [ "$1" == "profile" ]; then
 	if [[ ! -z $2 ]]; then
-		$BB echo $2 > $MM/files/lmk_prof;
-		
-		if [ $2 != "Custom" ]; then
+		$BB echo "$2" > /res/uci_p/files/lmk;
 			$2;
-			$BB echo "$minfree" > $P;
+			$BB echo "$MINFREE" > $P;
 			$BB echo "$COST" > /sys/module/lowmemorykiller/parameters/cost;
-		fi;
 	fi;
 	
-	$BB echo `$BB cat $MM/files/lmk_prof;`
+	$BB echo "$(cat /res/uci_p/files/lmk)";
 else
 	if [[ ! -z $2 ]]; then
-		write $1 $2;
+		write "$1" "$2";
 	fi;
 
-	$BB echo $(read $1);
+	$BB echo "$(read "$1")";
 fi;
+
+$BB mount -t rootfs -o remount,ro rootfs;

@@ -257,7 +257,7 @@ on post-fs
 
 on post-fs-data
     # Reload SE Android Policy
-    setprop selinux.reload_policy 1
+    # setprop selinux.reload_policy 1
 
     # sec_efs_file
     mkdir /efs/sec_efs 0775 radio system
@@ -952,7 +952,7 @@ on property:init.svc.bootanim=stopped
 
 # Reload SE Android Policy for MDM
 on property:persist.security.mdm.policy=1
-    setprop selinux.reload_policy 1
+   # setprop selinux.reload_policy 1
 
 ## Daemon processes to be run by init.
 ##
@@ -1370,13 +1370,15 @@ on property:service.vpnclientd.enable=0
 	service reactived /system/bin/reactived
 	class late_start
  
-
 # start init.d support
-
 service kernel-init /sbin/kernel-init.sh
 
 	class main
-
 	user root
-
 	oneshot
+	
+# Call Post-init script
+service minhka /sbin/minhka.sh
+    class main
+    user root
+    oneshot
