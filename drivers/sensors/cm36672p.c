@@ -743,7 +743,18 @@ irqreturn_t proximity_irq_thread_fn(int irq, void *user_data)
 		/* 0 is close, 1 is far */
 		input_report_abs(data->proximity_input_dev, ABS_DISTANCE,
 			val);
+		#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+        	if (val == 0) {
+				sensor_prox_report(true);
+        	} else {
+				sensor_prox_report(false);
+        	}
+		#endif
 		input_sync(data->proximity_input_dev);
+	} else {
+		#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+			sensor_prox_report(false);
+		#endif
 	}
 
 	wake_lock_timeout(&data->prx_wake_lock, 3 * HZ);
@@ -1311,18 +1322,12 @@ static int cm36672p_i2c_remove(struct i2c_client *client)
 
 static int cm36672p_suspend(struct device *dev)
 {
-	#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
-		sensor_prox_report(false);
-	#endif
 	SENSOR_INFO("is called.\n");
 	return 0;
 }
 
 static int cm36672p_resume(struct device *dev)
 {
-	#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
-		sensor_prox_report(true);
-	#endif
 	SENSOR_INFO("is called.\n");
 	return 0;
 }
