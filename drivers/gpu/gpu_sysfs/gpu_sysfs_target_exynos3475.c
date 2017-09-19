@@ -5,7 +5,7 @@
  * Path defines for all the sysfs files.
  * *********************************************************************
  * */
-/*#define  	GPU_MIN_CLOCK		"/sys/devices/11400000.mali/" -- Not available directly from sysfs. */
+#define  	GPU_MIN_CLOCK		"/sys/devices/11400000.mali/" -- Not available directly from sysfs. 
 /*#define  	GPU_MAX_CLOCK		"/sys/devices/11400000.mali/" -- Not available directly from sysfs. */
 #define  	GPU_BUSY			"/sys/devices/11400000.mali/utilization"
 #define  	GPU_VOL				"/sys/devices/11400000.mali/vol"
@@ -27,7 +27,6 @@
  * */
 extern unsigned int gpu_min_override;
 extern unsigned int gpu_max_override;
-extern unsigned int gpu_max_override_screen_off;
 
 ssize_t gpu_min_clock_write(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
@@ -65,23 +64,6 @@ ssize_t gpu_max_clock_show(struct device *dev, struct device_attribute *attr, ch
 	return sprintf(buf, "%u\n", gpu_max_override);
 }
 
-ssize_t gpu_max_clock_screen_off_write(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
-{
-	unsigned int freq = 0;
-	unsigned int ret;
-
-	ret = sscanf(buf, "%u", &freq);
-	if (ret != 1)
-		return -EINVAL;
-	
-	gpu_max_override_screen_off = freq;
-	return count;
-}
-
-ssize_t gpu_max_clock_screen_off_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", gpu_max_override_screen_off);
-}
 
 ssize_t gpu_busy_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
