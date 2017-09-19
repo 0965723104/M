@@ -45,7 +45,7 @@ static unsigned int exynos3475_default_volt_table[CPUFREQ_LEVEL_END];
 
 static struct cpufreq_frequency_table exynos3475_freq_table[] = {
 	{L0,  1703 * 1000},
-	{L1,  1573 * 1000},
+	{L1,  1586 * 1000},
 	{L2,  1495 * 1000},
 	{L3,  1404 * 1000},
 	{L4,  1300 * 1000},
@@ -62,6 +62,7 @@ static struct cpufreq_frequency_table exynos3475_freq_table[] = {
 	{L15,  195 * 1000},
 	{0, CPUFREQ_TABLE_END},
 };
+
 #if 0
 static unsigned int exynos3475_clkdiv_table[9][CPUFREQ_LEVEL_END] = {
 	/* Divider , L0, L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11, L12 */
@@ -148,7 +149,7 @@ static int exynos3475_bus_table[CPUFREQ_LEVEL_END] = {
 	413000,		/* 800 MHz */
 	413000,		/* 700 MHz */
 	413000,		/* 600 MHz */
-	413000,		/* 500 MHz */
+	0,		/* 500 MHz */
 	0,		/* 400 MHz */
 	0,		/* 300 MHz */
 	0,		/* 200 MHz */
@@ -232,6 +233,7 @@ static void exynos3475_set_frequency(unsigned int old_index,
 			exynos3475_freq_table[new_index].frequency,
 			exynos3475_freq_table[old_index].frequency);
 }
+
 
 static void __init set_volt_table(void)
 {

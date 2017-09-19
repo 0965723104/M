@@ -5,7 +5,7 @@
  * Path defines for all the sysfs files.
  * *********************************************************************
  * */
-#define  	GPU_MIN_CLOCK		"/sys/devices/11400000.mali/" -- Not available directly from sysfs. 
+/*#define  	GPU_MIN_CLOCK		"/sys/devices/11400000.mali/" -- Not available directly from sysfs. */
 /*#define  	GPU_MAX_CLOCK		"/sys/devices/11400000.mali/" -- Not available directly from sysfs. */
 #define  	GPU_BUSY			"/sys/devices/11400000.mali/utilization"
 #define  	GPU_VOL				"/sys/devices/11400000.mali/vol"
