@@ -1499,7 +1499,7 @@ static int dsim_panel_suspend(struct dsim_device *dsim)
 	panel->state = PANEL_STATE_SUSPENED;
 	#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
 		dt2w_screen_report(0); // LukasAddon : set dt2w event enabled
-	#endi
+	#endif
 suspend_err:
 	mutex_unlock(&panel->lock);
 
