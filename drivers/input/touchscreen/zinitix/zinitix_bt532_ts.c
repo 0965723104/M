@@ -70,6 +70,23 @@
 
 extern char *saved_command_line;
 
+#define LOGTAG "[doubletap2wakeftsts]: "
+
+#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+#include <linux/input/doubletap2wake.h>
+extern void dt2w_input_event(unsigned int code, int value);
+#else
+#define dt2w_switch 0
+#endif
+
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+#include <linux/input/sweep2wake.h>
+extern void s2w_input_event(unsigned int code, int value);
+#else
+#define s2w_wakeup 0
+#endif
+
+
 #define ZINITIX_DEBUG				0
 #define PDIFF_DEBUG					1
 #if !defined(CONFIG_SAMSUNG_PRODUCT_SHIP)
@@ -1223,17 +1240,12 @@ fail_power_sequence:
 static bool bt532_power_control(struct bt532_ts_info *info, u8 ctl)
 {
 	struct i2c_client *client = info->client;
-
 	int ret = 0;
-
 	tsp_debug_info(true, &client->dev, "[TSP] %s, %d\n", __func__, ctl);
-
 	ret = info->pdata->tsp_power(info, ctl);
 	if (ret)
 		return false;
-
 	bt532_pinctrl_configure(info, ctl);
-
 	if (ctl == POWER_ON_SEQUENCE) {
 		msleep(CHIP_ON_DELAY);
 		return bt532_power_sequence(info);
@@ -1244,7 +1256,6 @@ static bool bt532_power_control(struct bt532_ts_info *info, u8 ctl)
 	else if (ctl == POWER_ON) {
 		msleep(CHIP_ON_DELAY);
 	}
-
 	return true;
 }
 
@@ -2129,6 +2140,20 @@ static irqreturn_t bt532_touch_work(int irq, void *data)
 			input_report_abs(info->input_dev, ABS_MT_POSITION_X, x);
 			input_report_abs(info->input_dev, ABS_MT_POSITION_Y, y);
 			input_report_key(info->input_dev, BTN_TOUCH, 1);
+            #ifndef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE_DEBUG
+                        //pr_info("doubletap2wake line 1120 ABS_MT_POSITION_X = %d send event\n", x);
+                        //pr_info("doubletap2wake line 1120 ABS_MT_POSITION_Y = %d send event\n", y);
+            #endif
+            #ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+                        dt2w_input_event(BTN_TOUCH, 1);
+                        dt2w_input_event(ABS_MT_POSITION_X, x);
+                        dt2w_input_event(ABS_MT_POSITION_Y, y);
+            #endif
+            #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+                        s2w_input_event(BTN_TOUCH, 1);
+                        s2w_input_event(ABS_MT_POSITION_X, x);
+                        s2w_input_event(ABS_MT_POSITION_Y, y);
+            #endif
 		} else if (zinitix_bit_test(sub_status, SUB_BIT_UP)||
 			zinitix_bit_test(prev_sub_status, SUB_BIT_EXIST)) {
 #if !defined(CONFIG_SAMSUNG_PRODUCT_SHIP)
@@ -2137,8 +2162,18 @@ static irqreturn_t bt532_touch_work(int irq, void *data)
 			tsp_debug_info(true, &client->dev, "Finger up\n");
 #endif
 			info->finger_cnt1--;
-			if (info->finger_cnt1 == 0)
-				input_report_key(info->input_dev, BTN_TOUCH, 0);
+			if (info->finger_cnt1 == 0) {
+                input_report_key(info->input_dev, BTN_TOUCH, 0);
+                #ifndef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE_DEBUG
+                                pr_info("doubletap2wake line 1226 BTN_TOUCH = 0 send event\n");
+                #endif
+                #ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+                                dt2w_input_event(BTN_TOUCH, 0);
+                #endif
+                #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+                                s2w_input_event(BTN_TOUCH, 0);
+                #endif
+            }
 			memset(&info->touch_info.coord[i], 0x0, sizeof(struct coord));
 			input_mt_slot(info->input_dev, i);
 			input_mt_report_slot_state(info->input_dev, MT_TOOL_FINGER, 0);
@@ -4943,6 +4978,10 @@ static int bt532_power_ctrl(void *data, bool on)
 	struct regulator *regulator_dvdd = NULL;
 	struct regulator *regulator_avdd;
 	int retval = 0;
+	// do not off touchscreen if dt2w or s2w enabled
+	if(dt2w_switch || s2w_wakeup) {
+		on = true;
+	}
 
 	if (info->tsp_pwr_enabled == on)
 		return retval;

@@ -78,6 +78,9 @@
 #define DEFAULT_CONF3	0x4500
 #define DEFAULT_TRIM	0x0000
 
+#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+extern void sensor_prox_report(unsigned int detected);
+#endif
 
 enum {
 	REG_ADDR = 0,
@@ -1308,12 +1311,18 @@ static int cm36672p_i2c_remove(struct i2c_client *client)
 
 static int cm36672p_suspend(struct device *dev)
 {
+	#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+		sensor_prox_report(false);
+	#endif
 	SENSOR_INFO("is called.\n");
 	return 0;
 }
 
 static int cm36672p_resume(struct device *dev)
 {
+	#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+		sensor_prox_report(true);
+	#endif
 	SENSOR_INFO("is called.\n");
 	return 0;
 }
