@@ -67,6 +67,14 @@ static int gpu_tmu_hot_check_and_work(struct kbase_device *kbdev, unsigned long 
 		lock_clock = platform->tmu_lock_clk[THROTTLING4];
 		GPU_LOG(DVFS_INFO, DUMMY, 0u, 0u, "THROTTLING4\n");
 		break;
+	case GPU_THROTTLING5:
+		lock_clock = platform->tmu_lock_clk[THROTTLING5];
+		GPU_LOG(DVFS_INFO, DUMMY, 0u, 0u, "THROTTLING5\n");
+		break;
+	case GPU_THROTTLING6:
+		lock_clock = platform->tmu_lock_clk[THROTTLING6];
+		GPU_LOG(DVFS_INFO, DUMMY, 0u, 0u, "THROTTLING6\n");
+		break;
 	case GPU_TRIPPING:
 		lock_clock = platform->tmu_lock_clk[TRIPPING];
 		GPU_LOG(DVFS_INFO, DUMMY, 0u, 0u, "TRIPPING\n");
