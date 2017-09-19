@@ -2440,6 +2440,13 @@ static int bt532_ts_resume(struct device *dev)
 
 static int bt532_ts_suspend(struct device *dev)
 {
+	#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+		// do not off touchscreen if dt2w or s2w enabled
+		if(dt2w_switch || s2w_wakeup) {
+			return 0;
+		}
+	#endif
+
 	struct i2c_client *client = to_i2c_client(dev);
 	struct bt532_ts_info *info = i2c_get_clientdata(client);
 
@@ -4984,10 +4991,6 @@ static int bt532_power_ctrl(void *data, bool on)
 	struct regulator *regulator_dvdd = NULL;
 	struct regulator *regulator_avdd;
 	int retval = 0;
-	// do not off touchscreen if dt2w or s2w enabled
-	if(dt2w_switch || s2w_wakeup) {
-		on = true;
-	}
 
 	if (info->tsp_pwr_enabled == on)
 		return retval;
