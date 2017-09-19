@@ -1883,6 +1883,9 @@ static void clear_report_data(struct bt532_ts_info *info)
 			}
 		}
 	input_report_key(info->input_dev, BTN_TOUCH, 0);
+	#ifndef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE_DEBUG
+			pr_info("doubletap2wake line 1887 BTN_TOUCH = 0 send event\n");
+	#endif
 	}
 
 	for (i = 0; i < info->cap_info.multi_fingers; i++) {
@@ -2033,6 +2036,9 @@ static irqreturn_t bt532_touch_work(int irq, void *data)
 				info->finger_cnt1--;
 				if (info->finger_cnt1 == 0)
 					input_report_key(info->input_dev, BTN_TOUCH, 0);
+				#ifndef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE_DEBUG
+								pr_info("doubletap2wake line 2037 BTN_TOUCH = 0 send event\n");
+				#endif
 				input_mt_slot(info->input_dev, i);
 				input_mt_report_slot_state(info->input_dev,
 											MT_TOOL_FINGER, 0);
@@ -2141,8 +2147,8 @@ static irqreturn_t bt532_touch_work(int irq, void *data)
 			input_report_abs(info->input_dev, ABS_MT_POSITION_Y, y);
 			input_report_key(info->input_dev, BTN_TOUCH, 1);
             #ifndef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE_DEBUG
-                        //pr_info("doubletap2wake line 1120 ABS_MT_POSITION_X = %d send event\n", x);
-                        //pr_info("doubletap2wake line 1120 ABS_MT_POSITION_Y = %d send event\n", y);
+                        pr_info("doubletap2wake line 1120 ABS_MT_POSITION_X = %d send event\n", x);
+                        pr_info("doubletap2wake line 1120 ABS_MT_POSITION_Y = %d send event\n", y);
             #endif
             #ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
                         dt2w_input_event(BTN_TOUCH, 1);
@@ -2165,7 +2171,7 @@ static irqreturn_t bt532_touch_work(int irq, void *data)
 			if (info->finger_cnt1 == 0) {
                 input_report_key(info->input_dev, BTN_TOUCH, 0);
                 #ifndef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE_DEBUG
-                                pr_info("doubletap2wake line 1226 BTN_TOUCH = 0 send event\n");
+                                pr_info("doubletap2wake line 2167 BTN_TOUCH = 0 send event\n");
                 #endif
                 #ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
                                 dt2w_input_event(BTN_TOUCH, 0);
