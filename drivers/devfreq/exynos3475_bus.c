@@ -204,9 +204,9 @@ struct devfreq_clk_info dout_aclk_isp_300[] = {
 };
 
 struct devfreq_opp_table devfreq_int_opp_list[] = {
-	{INT_LV0, 400000, 1175000},
-	{INT_LV1, 333000, 1125000},
-	{INT_LV2, 275000, 1025000},
+	{INT_LV0, 400000, 850000},
+	{INT_LV1, 333000, 750000},
+	{INT_LV2, 275000, 600000},
 };
 
 struct devfreq_clk_info *devfreq_clk_int_info_list[] = {
@@ -290,7 +290,6 @@ struct devfreq_clk_list devfreq_mif_clk[MIF_CLK_COUNT] = {
 	{"dout_aclk_dispaud_133",},
 	{"mout_aclk_dispaud_133",},
 };
-
 struct devfreq_opp_table devfreq_mif_opp_list[] = {
 	{MIF_LV0, 825000, 1200000},
 	{MIF_LV1, 728000, 1200000},

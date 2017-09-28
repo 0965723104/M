@@ -37,7 +37,7 @@
 #define VOLT_RANGE_STEP		25000
 #define MIN_VOLT 500000
 #define MAX_VOLT_ 1400000
-#define VOLT_DIV		6250
+#define VOLT_DIV		12500
 
 #ifdef CONFIG_SMP
 struct lpj_info {

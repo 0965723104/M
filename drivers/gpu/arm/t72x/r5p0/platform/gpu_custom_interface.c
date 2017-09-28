@@ -35,9 +35,9 @@
 #include <linux/sysfs_helpers.h>
 
 #ifdef CONFIG_SOC_EXYNOS3475
-#define MAX_VOLT		1300000
-#define MIN_VOLT		500000
-#define VOLT_STEP		6250
+#define GPU_MAX_VOLT /*FIX WARNING*/	1200000 
+#define GPU_MIN_VOLT		500000
+#define GPU_VOLT_STEP		12500
 #else
 #error "Please define gpu voltage ranges for current SoC."
 #endif
@@ -278,17 +278,17 @@ static ssize_t set_volt_table(struct device *dev, struct device_attribute *attr,
 	spin_lock_irqsave(&platform->gpu_dvfs_spinlock, flags);
 
 	if (tokens == 2 && target > -1) {
-		if ((rest = t[1] % VOLT_STEP) != 0) 
-			t[1] += VOLT_STEP - rest;
+		if ((rest = t[1] % GPU_VOLT_STEP) != 0) 
+			t[1] += GPU_VOLT_STEP - rest;
 		
-		sanitize_min_max(t[1], MIN_VOLT, MAX_VOLT);
+		sanitize_min_max(t[1], GPU_MIN_VOLT, GPU_MAX_VOLT);
 		platform->table[target].voltage = t[1];
 	} else {
 		for (i = 0; i < tokens; i++) {
-			if ((rest = t[i] % VOLT_STEP) != 0) 
-				t[i] += VOLT_STEP - rest;
+			if ((rest = t[i] % GPU_VOLT_STEP) != 0) 
+				t[i] += GPU_VOLT_STEP - rest;
 			
-			sanitize_min_max(t[i], MIN_VOLT, MAX_VOLT);
+			sanitize_min_max(t[i], GPU_MIN_VOLT, GPU_MAX_VOLT);
 			platform->table[i + max].voltage = t[i];
 		}
 	}
@@ -499,6 +499,101 @@ static ssize_t set_governor(struct device *dev, struct device_attribute *attr, c
 	return count;
 }
 
+static ssize_t show_gpu_max_clock(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	ssize_t ret = 0;
+	struct exynos_context *platform = (struct exynos_context *)pkbdev->platform_context;
+
+	if (!platform)
+		return -ENODEV;
+
+	ret += snprintf(buf+ret, PAGE_SIZE-ret, "%d", platform->gpu_max_clock);
+
+	if (ret < PAGE_SIZE - 1) {
+		ret += snprintf(buf+ret, PAGE_SIZE-ret, "\n");
+	} else {
+		buf[PAGE_SIZE-2] = '\n';
+		buf[PAGE_SIZE-1] = '\0';
+		ret = PAGE_SIZE-1;
+	}
+
+	return ret;
+}
+
+static ssize_t set_gpu_max_clock(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	int ret, gpu_max_clock;
+	struct exynos_context *platform = (struct exynos_context *)pkbdev->platform_context;
+
+	if (!platform)
+		return -ENODEV;
+
+	ret = kstrtoint(buf, 0, &gpu_max_clock);
+
+	if (ret) {
+		GPU_LOG(DVFS_WARNING, DUMMY, 0u, 0u, "%s: invalid value\n", __func__);
+		return -ENOENT;
+	}
+
+	if ((gpu_max_clock < platform->gpu_min_clock_limit) || (gpu_max_clock > platform->gpu_max_clock_limit)) {
+		GPU_LOG(DVFS_WARNING, DUMMY, 0u, 0u, "%s: out of range (%d)\n", __func__, gpu_max_clock);
+		return -ENOENT;
+	}
+
+	platform->gpu_max_clock = gpu_max_clock;
+	gpu_dvfs_clock_lock(GPU_DVFS_MAX_UNLOCK, SYSFS_LOCK, 0);
+
+
+	return count;
+}
+
+static ssize_t show_gpu_min_clock(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	ssize_t ret = 0;
+	struct exynos_context *platform = (struct exynos_context *)pkbdev->platform_context;
+
+	if (!platform)
+		return -ENODEV;
+
+	ret += snprintf(buf+ret, PAGE_SIZE-ret, "%d", platform->gpu_min_clock);
+
+	if (ret < PAGE_SIZE - 1) {
+		ret += snprintf(buf+ret, PAGE_SIZE-ret, "\n");
+	} else {
+		buf[PAGE_SIZE-2] = '\n';
+		buf[PAGE_SIZE-1] = '\0';
+		ret = PAGE_SIZE-1;
+	}
+
+	return ret;
+}
+
+static ssize_t set_gpu_min_clock(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	int ret, gpu_min_clock;
+	struct exynos_context *platform = (struct exynos_context *)pkbdev->platform_context;
+
+	if (!platform)
+		return -ENODEV;
+
+	ret = kstrtoint(buf, 0, &gpu_min_clock);
+
+	if (ret) {
+		GPU_LOG(DVFS_WARNING, DUMMY, 0u, 0u, "%s: invalid value\n", __func__);
+		return -ENOENT;
+	}
+
+	if ((gpu_min_clock < platform->gpu_min_clock_limit) || (gpu_min_clock > platform->gpu_max_clock_limit)) {
+		GPU_LOG(DVFS_WARNING, DUMMY, 0u, 0u, "%s: out of range (%d)\n", __func__, gpu_min_clock);
+		return -ENOENT;
+	}
+
+	platform->gpu_min_clock = gpu_min_clock;
+
+	return count;
+}
+
+
 static ssize_t show_max_lock_status(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	ssize_t ret = 0;
@@ -605,6 +700,7 @@ static ssize_t set_max_lock_dvfs(struct device *dev, struct device_attribute *at
 			GPU_LOG(DVFS_WARNING, DUMMY, 0u, 0u, "%s: invalid value\n", __func__);
 			return -ENOENT;
 		}
+		clock = platform->gpu_max_clock;
 
 		ret = gpu_dvfs_get_level(clock);
 		if ((ret < gpu_dvfs_get_level(platform->gpu_max_clock)) || (ret > gpu_dvfs_get_level(platform->gpu_min_clock))) {
@@ -1503,6 +1599,8 @@ DEVICE_ATTR(highspeed_load, S_IRUGO|S_IWUSR, show_highspeed_load, set_highspeed_
 DEVICE_ATTR(highspeed_delay, S_IRUGO|S_IWUSR, show_highspeed_delay, set_highspeed_delay);
 DEVICE_ATTR(wakeup_lock, S_IRUGO|S_IWUSR, show_wakeup_lock, set_wakeup_lock);
 DEVICE_ATTR(polling_speed, S_IRUGO|S_IWUSR, show_polling_speed, set_polling_speed);
+DEVICE_ATTR(gpumax_clock, S_IRUGO|S_IWUSR, show_gpu_max_clock, set_gpu_max_clock);
+DEVICE_ATTR(gpumin_clock, S_IRUGO|S_IWUSR, show_gpu_min_clock, set_gpu_min_clock);
 DEVICE_ATTR(tmu, S_IRUGO|S_IWUSR, show_tmu, set_tmu_control);
 #ifdef CONFIG_CPU_THERMAL_IPA
 DEVICE_ATTR(norm_utilization, S_IRUGO, show_norm_utilization, NULL);
@@ -1631,6 +1729,15 @@ int gpu_create_sysfs_file(struct device *dev)
 		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [polling_speed]\n");
 		goto out;
 	}
+	if (device_create_file(dev, &dev_attr_gpumax_clock)) {
+		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [gpumax_clock]\n");
+		goto out;
+	}
+
+	if (device_create_file(dev, &dev_attr_gpumin_clock)) {
+		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [gpumin_clock]\n");
+		goto out;
+	}	
 
 	if (device_create_file(dev, &dev_attr_tmu)) {
 		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [tmu]\n");
@@ -1726,6 +1833,8 @@ void gpu_remove_sysfs_file(struct device *dev)
 	device_remove_file(dev, &dev_attr_highspeed_delay);
 	device_remove_file(dev, &dev_attr_wakeup_lock);
 	device_remove_file(dev, &dev_attr_polling_speed);
+	device_remove_file(dev, &dev_attr_gpumax_clock);
+	device_remove_file(dev, &dev_attr_gpumin_clock);
 	device_remove_file(dev, &dev_attr_tmu);
 #ifdef CONFIG_CPU_THERMAL_IPA
 	device_remove_file(dev, &dev_attr_norm_utilization);
