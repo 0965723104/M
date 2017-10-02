@@ -341,7 +341,7 @@ void cfg80211_bss_expire(struct cfg80211_registered_device *dev)
 {
 	__cfg80211_bss_expire(dev, jiffies - IEEE80211_SCAN_RESULT_EXPIRE);
 }
-
+/*  unused code
 static bool cfg80211_bss_expire_oldest(struct cfg80211_registered_device *rdev)
 {
 	struct cfg80211_internal_bss *bss, *oldest = NULL;
@@ -365,17 +365,17 @@ static bool cfg80211_bss_expire_oldest(struct cfg80211_registered_device *rdev)
 	if (WARN_ON(!oldest))
 		return false;
 
-	/*
-	 * The callers make sure to increase rdev->bss_generation if anything
-	 * gets removed (and a new entry added), so there's no need to also do
-	 * it here.
-	 */
+	
+	 // The callers make sure to increase rdev->bss_generation if anything
+	 //gets removed (and a new entry added), so there's no need to also do
+	 //it here.
+	 
 
 	ret = __cfg80211_unlink_bss(rdev, oldest);
 	WARN_ON(!ret);
 	return ret;
 }
-
+*/
 const u8 *cfg80211_find_ie(u8 eid, const u8 *ies, int len)
 {
 	while (len > 2 && ies[0] != eid) {
