@@ -51,9 +51,9 @@ void __iomem *g3d1_outstanding_regs;
 /*  clk,vol,abb,min,max,down stay, time, pm_qos mem,
 	pm_qos int, pm_qos cpu_kfc_min, pm_qos cpu_egl_max */
 static gpu_dvfs_info gpu_dvfs_table_default[] = {
-	{910, 1150000, 0,  99, 100, 1, 0, 666000, 400000,  1300000, 1586000},
-	{845, 1100000, 0,  98,  99, 2, 0, 666000, 400000,  1196000, 1586000},
-	{734, 1025000, 0,  97,  98, 5, 0, 666000, 400000,  1105000, 1586000},
+	{910, 1150000, 0,  99, 100, 1, 0, 825000, 400000,  1300000, 1586000},
+	{845, 1100000, 0,  98,  99, 2, 0, 728000, 400000,  1196000, 1586000},
+	{734, 1025000, 0,  97,  98, 5, 0, 728000, 400000,  1105000, 1586000},
 	{667, 1000000, 0,  96,  97, 9, 0, 666000, 333000,  1001000, 1586000},
 	{533,  900000, 0,  90,  98, 1, 0, 666000, 333000,   806000, 1586000},
 	{350,  750000, 0,  78,  95, 1, 0, 559000, 275000,   702000, 1586000},
@@ -62,7 +62,7 @@ static gpu_dvfs_info gpu_dvfs_table_default[] = {
 };
 
 static int mif_min_table[] = {
-	200000, 273000, 338000, 413000, 559000, 666000, /* 728000, 825000, i dont know not use */
+	200000, 273000, 338000, 413000, 559000, 666000, 728000, 825000,
 };
 
 static gpu_attribute gpu_config_attributes[] = {
@@ -92,10 +92,10 @@ static gpu_attribute gpu_config_attributes[] = {
 	{GPU_COLD_MINIMUM_VOL, 0},
 	{GPU_VOLTAGE_OFFSET_MARGIN, 37500},
 	{GPU_TMU_CONTROL, 0},
-	{GPU_TEMP_THROTTLING1, 734},
-	{GPU_TEMP_THROTTLING2, 667}, 
-	{GPU_TEMP_THROTTLING3, 533},
-	{GPU_TEMP_THROTTLING4, 440},
+	{GPU_TEMP_THROTTLING1, 845},
+	{GPU_TEMP_THROTTLING2, 734}, 
+	{GPU_TEMP_THROTTLING3, 667},
+	{GPU_TEMP_THROTTLING4, 533},
 	{GPU_TEMP_THROTTLING5, 350},
 	{GPU_TEMP_THROTTLING6, 266},
 	{GPU_TEMP_TRIPPING, 266},
@@ -120,7 +120,7 @@ static gpu_attribute gpu_config_attributes[] = {
 	{GPU_DVFS_POLLING_TIME, 30}, //back to default
 	{GPU_PERF_GATHERING, 0},
 	{GPU_PMQOS_INT_DISABLE, 0},
-	{GPU_PMQOS_MIF_MAX_CLOCK, 666000},
+	{GPU_PMQOS_MIF_MAX_CLOCK, 825000},
 	{GPU_PMQOS_MIF_MAX_CLOCK_BASE, 910},
 #ifdef CONFIG_EXYNOS_CL_DVFS_G3D
 	{GPU_CL_DVFS_START_BASE, 667},

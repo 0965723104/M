@@ -28,7 +28,7 @@
 #include "governor.h"
 #include <linux/sysfs_helpers.h>
 #ifdef CONFIG_SOC_EXYNOS3475
-#define MAX_VOLT		1100000
+#define MAX_VOLT		1200000
 #define MIN_VOLT		500000
 #define VOLT_DIV		12500
 #else

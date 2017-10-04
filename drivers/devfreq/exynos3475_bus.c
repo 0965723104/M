@@ -444,7 +444,7 @@ int devfreq_get_opp_idx(struct devfreq_opp_table *table,
 	return -EINVAL;
 }
 
-#define MUX_MASK	0x3
+#define MUX_MASK	0x7
 #define MUX_OFFSET	12
 static void exynos3475_devfreq_waiting_mux(void __iomem *mux_reg, u32 mux_set_value)
 {
@@ -1489,14 +1489,14 @@ void exynos3475_devfreq_set_dll_lock_value(struct devfreq_data_mif *data,
 	/* temporary save dll_lock_value for switching pll */
 	exynos3475_devfreq_get_dll_lock_value(data, target_idx);
 
-	/* Change frequency to 559MHz from 666MHz */
-	exynos3_devfreq_mif_set_freq(data, DLL_LOCK_LV, MIF_LV2);
+	/* Change frequency to 559 from 825 */
+	exynos3_devfreq_mif_set_freq(data, DLL_LOCK_LV, MIF_LV0);
 
 	/* save dll_lock_value  */
 	exynos3475_devfreq_get_dll_lock_value(data, target_idx);
 
-	/* Change frequency to 666MHz from 559MHz */
-	exynos3_devfreq_mif_set_freq(data, MIF_LV2, DLL_LOCK_LV);
+	/* Change frequency to 825 from 559 */
+	exynos3_devfreq_mif_set_freq(data, MIF_LV0, DLL_LOCK_LV);
 }
 
 int exynos3475_devfreq_mif_init(void *data)

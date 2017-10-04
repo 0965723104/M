@@ -137,15 +137,15 @@ static const unsigned int asv_voltage_3475[CPUFREQ_LEVEL_END] = {
 
 /* Minimum memory throughput in megabytes per second */
 static int exynos3475_bus_table[CPUFREQ_LEVEL_END] = {
-	666000,		/* 1.7 GHz */
-	666000,		/* 1.6 GHz */
-	666000,		/* 1.5 GHz */
-	666000,		/* 1.4 GHz */
-	666000,		/* 1.3 GHz */
+	825000,		/* 1.7 GHz */
+	825000,		/* 1.6 GHz */
+	825000,		/* 1.5 GHz */
+	728000,		/* 1.4 GHz */
+	728000,		/* 1.3 GHz */
 	666000,		/* 1.2 GHz */
 	666000,		/* 1.1 GHz */
 	559000,		/* 1.0 GHz */
-	413000,		/* 900 MHz */
+	559000,		/* 900 MHz */
 	413000,		/* 800 MHz */
 	413000,		/* 700 MHz */
 	413000,		/* 600 MHz */
