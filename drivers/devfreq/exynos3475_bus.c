@@ -444,7 +444,7 @@ int devfreq_get_opp_idx(struct devfreq_opp_table *table,
 	return -EINVAL;
 }
 
-#define MUX_MASK	0x7
+#define MUX_MASK	0x3 //revert
 #define MUX_OFFSET	12
 static void exynos3475_devfreq_waiting_mux(void __iomem *mux_reg, u32 mux_set_value)
 {
