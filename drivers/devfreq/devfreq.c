@@ -26,6 +26,7 @@
 #include <linux/printk.h>
 #include <linux/hrtimer.h>
 #include "governor.h"
+#if 0
 #include <linux/sysfs_helpers.h>
 #ifdef CONFIG_SOC_EXYNOS3475
 #define MAX_VOLT		1200000
@@ -34,7 +35,7 @@
 #else
 #error "Please define core voltage ranges for current SoC."
 #endif
-
+#endif
 static struct class *devfreq_class;
 
 /*
@@ -983,6 +984,7 @@ static ssize_t show_time_in_state(struct device *dev,
 	}
 	return len;
 }
+#if 0
 static ssize_t store_volt_table(struct device *d, struct device_attribute *attr,
  			      const char *buf, size_t count)
  {
@@ -1045,6 +1047,8 @@ static ssize_t store_volt_table(struct device *d, struct device_attribute *attr,
  
  	return len;
  }
+#endif
+
 static struct device_attribute devfreq_attrs[] = {
 	__ATTR(governor, S_IRUGO | S_IWUSR, show_governor, store_governor),
 	__ATTR(available_governors, S_IRUGO, show_available_governors, NULL),
@@ -1057,7 +1061,7 @@ static struct device_attribute devfreq_attrs[] = {
 	__ATTR(max_freq, S_IRUGO | S_IWUSR, show_max_freq, store_max_freq),
 	__ATTR(trans_stat, S_IRUGO, show_trans_table, NULL),
 	__ATTR(time_in_state_raw, S_IRUGO, show_time_in_state, NULL),
-	__ATTR(volt_table, S_IRUGO | S_IWUSR, show_volt_table, store_volt_table),
+	//__ATTR(volt_table, S_IRUGO | S_IWUSR, show_volt_table, store_volt_table),
 	{ },
 };
 
