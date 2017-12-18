@@ -18,6 +18,20 @@ config ARCH_EXYNOS3
 	select HAVE_EXYNOS5_HSI2C if I2C
 	help
 	  Samsung EXYNOS3 (Cortex-A7) SoC based systems
+
+choice
+	prompt "Exynos device target"
+	default MACH_EXYNOS3575_NONE
+
+config MACH_EXYNOS3475_NONE
+	bool "None"
+
+config MACH_EXYNOS3475_J2LTE_EUR
+	bool "Galaxy J2 International (j2ltexx)"
+	select EXYNOS_DTBTOOL
+
+endchoice
+
 menuconfig EXYNOS_DTBTOOL
  	bool "Build dtbtool for Exynos"
 	select DTC

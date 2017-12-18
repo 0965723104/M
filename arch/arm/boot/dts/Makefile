@@ -213,6 +213,11 @@ dtb-$(CONFIG_ARCH_VT8500) += vt8500-bv07.dtb \
 	wm8850-w70v2.dtb
 dtb-$(CONFIG_ARCH_ZYNQ) += zynq-zc702.dtb
 
+dtb-$(CONFIG_MACH_EXYNOS3475_J2LTE_EUR) := \
+	exynos3475-j2lte_eur_open_01.dtb \
+	exynos3475-j2lte_eur_open_02.dtb \
+	exynos3475-j2lte_eur_open_03.dtb
+
 DTB_NAMES := $(subst $\",,$(CONFIG_BUILD_ARM_APPENDED_DTB_IMAGE_NAMES))
 ifneq ($(DTB_NAMES),)
 DTB_LIST := $(addsuffix .dtb,$(DTB_NAMES))
