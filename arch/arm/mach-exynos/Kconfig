@@ -25,9 +25,16 @@ choice
 
 config MACH_EXYNOS3475_NONE
 	bool "None"
+config MACH_EXYNOS3475_ON5LTE_CHN
+	bool "Galaxy ON5 International (on5ltexx)"
+	select EXYNOS_DTBTOOL
 
 config MACH_EXYNOS3475_J2LTE_EUR
 	bool "Galaxy J2 International (j2ltexx)"
+	select EXYNOS_DTBTOOL
+
+config MACH_EXYNOS3475_ON5LTE_SWA
+	bool "Galaxy ON5 International (on5ltexx)"
 	select EXYNOS_DTBTOOL
 
 endchoice

@@ -81,7 +81,7 @@
 				compatible = "siliconmitus,sm5703-fled";
 				enable = <1 1>;
 				flash_current = <1000>;
-				preflash_current = <180>;
+				preflash_current = <120>;
 				movie_current = <180>;
 				torch_current = <60>;
 				factory_current = <240>;
@@ -107,10 +107,10 @@
 			};
 		};
 		audio_codec_cod3025x: cod3025x@04 {
-			but-zones-list = <&but_zones 226 0 189>, /* send/end */
-					<&but_zones 582 190 249>, /* google */
-					<&but_zones 115 250 410>, /* vol up */
-					<&but_zones 114 411 1000>; /* vol down */
+			but-zones-list = <&but_zones 226 0 340>, /* send/end */
+					<&but_zones 582 341 385>, /* google */
+					<&but_zones 115 386 545>, /* vol up */
+					<&but_zones 114 546 1050>; /* vol down */
 			mic-adc-range = <1120>;
 			mic-det-delay = <50>;
 		};
@@ -187,7 +187,6 @@
 			cm36672p,default_low_thd = <13>;
 			cm36672p,cancel_hi_thd = <10>;
 			cm36672p,cancel_low_thd = <7>;
-			cm36672p,ps_duty = <2>;
 			cm36672p,ps_it = <4>;
 			cm36672p,led_current = <5>;
 			cm36672p,default_trim = <0>;
