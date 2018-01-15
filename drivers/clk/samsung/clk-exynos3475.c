@@ -274,7 +274,7 @@ struct samsung_pll_rate_table table_cpu[] = {
 	{  507000000U,     4,    312,      2,      0 }, /* L15 */
 	{  403000000U,     4,    248,      2,      0 }, /* L16 */
 	{  299000000U,     4,    368,      3,      0 }, /* L17 */
-	{  195000000U,     4,    240,      3,      0 }, /* L18 */
+	
 };
 
 struct samsung_pll_rate_table table_mem0[] = {

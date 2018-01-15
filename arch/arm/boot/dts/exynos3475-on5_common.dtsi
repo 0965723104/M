@@ -924,12 +924,12 @@
 
 		#define DVFS_CAM_L0 0
 
-		#define DVFS_MIF_L0 666000
-		#define DVFS_MIF_L1 559000
-		#define DVFS_MIF_L2 413000
-		#define DVFS_MIF_L3 338000
-		#define DVFS_MIF_L4 273000
-		#define DVFS_MIF_L5 200000
+		#define DVFS_MIF_L0 825000
+		#define DVFS_MIF_L1 728000
+		#define DVFS_MIF_L2 666000
+		#define DVFS_MIF_L3 559000
+		#define DVFS_MIF_L4 413000
+		#define DVFS_MIF_L5 338000
 
 		fimc_is_dvfs {
 			default_int = <DVFS_INT_L0>;
@@ -1072,6 +1072,10 @@
 
 		mif,ap_clk_table = <
 			/* khz */
+			1703000
+			1586000
+			1495000
+			1404000
 			1300000
 			1196000
 			1105000
@@ -1082,16 +1086,18 @@
 			598000
 			507000
 			403000
+			299000
+			195000
 			>;
 
 		mif,mif_clk_table = <
 			/* khz */
+			825000
+			728000
 			666000
 			559000
 			413000
 			338000
-			273000
-			200000
 			>;
 	};
 
@@ -1181,9 +1187,9 @@
 			net_boost,node="rmnet0 rmnet1 rmnet2 rmnet3 rmnet4 rmnet5 rmnet6 rmnet7 umts_dm0";
 			net_boost,table_size = <4>;
 			net_boost,table= <  1 0 0 0 0 0 1
-					   20 702000 0 413000 100000 0 1
-					   50 897000 0 559000 100000 0 1
-					  100 1196000 0 666000 100000 0 1>;
+					    20 702000 0 413000 100000 0 1
+					   50 1001000 0 825000 100000 0 1
+					  100 1404000 0 825000 100000 0 1>;
 		};
 		boot_device@2 {
 			net_boost,label="USB";

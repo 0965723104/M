@@ -125,7 +125,7 @@
 	hsi2c@104C0000 {
 		status = "okay";
 		samsung,hs-mode;
-		clock-frequency = <1700000>;
+		clock-frequency = <1703000>;
 		samsung,hsi2c-batcher;
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -865,7 +865,7 @@
 		rear_sensor_id = <13>;
 		front_sensor_id = <7>;
 
-		#define DVFS_INT_L0 400000
+		#define DVFS_INT_L0 334000
 		#define DVFS_INT_L1 333000
 		#define DVFS_INT_L2 276000
 		#define DVFS_INT_L3 207000

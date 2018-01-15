@@ -940,8 +940,8 @@
 		compatible = "samsung,exynos3-devfreq-mif";
 
 		bus_type_mif    = <1>;
-		pm_qos_class        = <5>;
-		pm_qos_class_max    = <6>;
+		pm_qos_class        = <7>;
+		pm_qos_class_max    = <8>;
 		cal_qos_max     = <00 825000>;
 		default_qos     = <00 413000>;
 		initial_freq    = <00 825000>;
