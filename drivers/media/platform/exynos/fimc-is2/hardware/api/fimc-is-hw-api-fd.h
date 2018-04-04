@@ -20,6 +20,13 @@ enum hw_api_fd_format_mode {
 	FD_FORMAT_MODE_END
 };
 
+enum fimc_is_lib_fd_cbcr_format {
+	FD_FORMAT_CBCR,
+	FD_FORMAT_CRCB,
+	FD_FORMAT_FIRST_CBCR,
+	FD_FORMAT_SECOND_CBCR,
+};
+
 struct hw_api_fd_setfile_half {
 	u32 setfile_version;
 	u32 skip_frames;
@@ -94,6 +101,7 @@ void fimc_is_fd_set_shift(void __iomem *base_addr, int shift);
 void fimc_is_fd_set_map_addr(void __iomem *base_addr, struct hw_api_fd_map *out_map);
 void fimc_is_fd_set_ymap_addr(void __iomem *base_addr, u8 *y_map);
 void fimc_is_fd_config_by_setfile(void __iomem *base_addr, struct hw_api_fd_setfile_half *setfile);
+void fimc_is_fd_set_cbcr_align(void __iomem *base_addr, enum fimc_is_lib_fd_cbcr_format cbcr);
 
 int fimc_is_fd_sw_reset(void __iomem *base_addr);
 

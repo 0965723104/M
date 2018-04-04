@@ -303,9 +303,6 @@ static unsigned long long mmc_merge_ext_csd(u8 *ext_csd, bool continuous, int co
 	return merge_ext_csd;
 }
 
-/* Minimum partition switch timeout in milliseconds */
-#define MMC_MIN_PART_SWITCH_TIME	300
-
 /*
  * Decode extended CSD.
  */
@@ -368,10 +365,6 @@ static int mmc_read_ext_csd(struct mmc_card *card, u8 *ext_csd)
 
 		/* EXT_CSD value is in units of 10ms, but we store in ms */
 		card->ext_csd.part_time = 10 * ext_csd[EXT_CSD_PART_SWITCH_TIME];
-		/* Some eMMC set the value too low so set a minimum */
-		if (card->ext_csd.part_time &&
-		    card->ext_csd.part_time < MMC_MIN_PART_SWITCH_TIME)
-			card->ext_csd.part_time = MMC_MIN_PART_SWITCH_TIME;
 
 		/* Sleep / awake timeout in 100ns units */
 		if (sa_shift > 0 && sa_shift <= 0x17)
@@ -1203,13 +1196,13 @@ static int mmc_init_card(struct mmc_host *host, u32 ocr,
 		if (card->ext_csd.hs_max_dtr > 52000000 &&
 			(host->caps2 & MMC_CAP2_HS200 ||
 			 host->caps2 & MMC_CAP2_HS200_DDR)) {
+			/*
+			 * Device output driver strength
+			 */
+			driver_type = host->dev_drv_str << 4;
 			if (en_strobe_enhanced) {
 				err = mmc_select_hs(card);
 			} else {
-				/*
-				 * Device output driver strength
-				 */
-				driver_type = host->dev_drv_str << 4;
 				err = mmc_select_hs200(card, driver_type);
 			}
 		} else if (host->caps & MMC_CAP_MMC_HIGHSPEED)

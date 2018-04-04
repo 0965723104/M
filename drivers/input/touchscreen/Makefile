@@ -6,11 +6,6 @@
 
 wm97xx-ts-y := wm97xx-core.o
 
-# for sweep2wake, leave 1st to avoid merge issues at the end of the file
-obj-$(CONFIG_TOUCHSCREEN_SWEEP2WAKE)		+= sweep2wake.o
-# for doubletap2wake, leave 1st to avoid merge issues at the end of the file
-obj-$(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)	+= doubletap2wake.o
-
 obj-$(CONFIG_TOUCHSCREEN_88PM860X)	+= 88pm860x-ts.o
 obj-$(CONFIG_TOUCHSCREEN_AD7877)	+= ad7877.o
 obj-$(CONFIG_TOUCHSCREEN_AD7879)	+= ad7879.o
@@ -82,6 +77,8 @@ obj-$(CONFIG_TOUCHSCREEN_W90X900)	+= w90p910_ts.o
 obj-$(CONFIG_TOUCHSCREEN_TPS6507X)	+= tps6507x-ts.o
 obj-$(CONFIG_TOUCHSCREEN_IST3026C) += imagis_30xxc/
 obj-$(CONFIG_TOUCHSCREEN_IST3032C) += imagis_30xxc/
+obj-$(CONFIG_TOUCHSCREEN_IST3038C) += imagis_30xxc/
 obj-$(CONFIG_TOUCHSCREEN_ZINITIX_BT532) += zinitix/
 obj-$(CONFIG_TOUCHSCREEN_ZINITIX_ZT75XX) += zinitix/
 obj-$(CONFIG_TOUCHSCREEN_MELFAS_MMS438)	+= melfas_mms400/
+obj-$(CONFIG_TOUCHSCREEN_CYTTSP5) +=cyttsp5/

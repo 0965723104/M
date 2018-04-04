@@ -114,7 +114,7 @@ bool regmap_readable(struct regmap *map, unsigned int reg)
 
 bool regmap_volatile(struct regmap *map, unsigned int reg)
 {
-	if (!map->format.format_write && !regmap_readable(map, reg))
+	if (!regmap_readable(map, reg))
 		return false;
 
 	if (map->volatile_reg)
@@ -1177,7 +1177,7 @@ int _regmap_write(struct regmap *map, unsigned int reg,
 	}
 
 #ifdef LOG_DEVICE
-	if (map->dev && strcmp(dev_name(map->dev), LOG_DEVICE) == 0)
+	if (strcmp(dev_name(map->dev), LOG_DEVICE) == 0)
 		dev_info(map->dev, "%x <= %x\n", reg, val);
 #endif
 
@@ -1200,7 +1200,7 @@ int regmap_write(struct regmap *map, unsigned int reg, unsigned int val)
 {
 	int ret;
 
-	if (!IS_ALIGNED(reg, map->reg_stride))
+	if (reg % map->reg_stride)
 		return -EINVAL;
 
 	map->lock(map->lock_arg);
@@ -1274,7 +1274,7 @@ int regmap_bulk_write(struct regmap *map, unsigned int reg, const void *val,
 		return -EINVAL;
 	if (!map->format.parse_inplace)
 		return -EINVAL;
-	if (!IS_ALIGNED(reg, map->reg_stride))
+	if (reg % map->reg_stride)
 		return -EINVAL;
 
 	map->lock(map->lock_arg);
@@ -1438,7 +1438,7 @@ int regmap_raw_write_async(struct regmap *map, unsigned int reg,
 
 	if (val_len % map->format.val_bytes)
 		return -EINVAL;
-	if (!IS_ALIGNED(reg, map->reg_stride))
+	if (reg % map->reg_stride)
 		return -EINVAL;
 
 	map->lock(map->lock_arg);
@@ -1527,7 +1527,7 @@ static int _regmap_read(struct regmap *map, unsigned int reg,
 	ret = map->reg_read(context, reg, val);
 	if (ret == 0) {
 #ifdef LOG_DEVICE
-		if (map->dev && strcmp(dev_name(map->dev), LOG_DEVICE) == 0)
+		if (strcmp(dev_name(map->dev), LOG_DEVICE) == 0)
 			dev_info(map->dev, "%x => %x\n", reg, *val);
 #endif
 
@@ -1554,7 +1554,7 @@ int regmap_read(struct regmap *map, unsigned int reg, unsigned int *val)
 {
 	int ret;
 
-	if (!IS_ALIGNED(reg, map->reg_stride))
+	if (reg % map->reg_stride)
 		return -EINVAL;
 
 	map->lock(map->lock_arg);
@@ -1590,7 +1590,7 @@ int regmap_raw_read(struct regmap *map, unsigned int reg, void *val,
 		return -EINVAL;
 	if (val_len % map->format.val_bytes)
 		return -EINVAL;
-	if (!IS_ALIGNED(reg, map->reg_stride))
+	if (reg % map->reg_stride)
 		return -EINVAL;
 
 	map->lock(map->lock_arg);
@@ -1643,7 +1643,7 @@ int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
 		return -EINVAL;
 	if (!map->format.parse_inplace)
 		return -EINVAL;
-	if (!IS_ALIGNED(reg, map->reg_stride))
+	if (reg % map->reg_stride)
 		return -EINVAL;
 
 	if (vol || map->cache_type == REGCACHE_NONE) {
@@ -1676,7 +1676,7 @@ int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
 					  &ival);
 			if (ret != 0)
 				return ret;
-			map->format.format_val(val + (i * val_bytes), ival, 0);
+			memcpy(val + (i * val_bytes), &ival, val_bytes);
 		}
 	}
 

@@ -272,6 +272,19 @@ static int make_list(struct device *dev, struct list_head *list, const char *nam
 	int i, count;
 	int gpio = 0, delay = 0, regulator = 0, ret = 0;
 	const char *type;
+	struct property *prop = NULL;
+
+	if (!lcdtype) {
+		prop = of_find_property(dev->of_node, DECON_BOARD_DTS_NAME, NULL);
+		of_remove_property(dev->of_node, prop);
+	}
+
+	if (!of_find_property(dev->of_node, DECON_BOARD_DTS_NAME, NULL)) {
+		dev_err(dev, "failed to find %s property, so create dummy\n", DECON_BOARD_DTS_NAME);
+		info = kzalloc(sizeof(struct action_info), GFP_KERNEL);
+		list_add_tail(&info->node, list);
+		return -EINVAL;
+	}
 
 	np = of_parse_phandle(dev->of_node, DECON_BOARD_DTS_NAME, 0);
 	np = of_find_node_by_name(np, name);

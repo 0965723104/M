@@ -150,5 +150,6 @@ void *fimc_is_alloc_reserved_buffer(unsigned int size);
 void fimc_is_free_reserved_buffer(void *buf);
 void *fimc_is_alloc_dma_buffer(unsigned int size);
 void fimc_is_free_dma_buffer(void *buf);
+void fimc_is_res_cache_invalid(u32 kvaddr, u32 size);
 int fimc_is_translate_kva_to_dva(u32 src_addr, u32 *target_addr);
 #endif

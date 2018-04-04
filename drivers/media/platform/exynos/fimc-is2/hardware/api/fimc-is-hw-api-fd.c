@@ -200,6 +200,30 @@ void fimc_is_fd_ycc_format(void __iomem *base_addr, u32 format)
 	fimc_is_hw_set_field(base_addr, &fd_regs[FD_R_SENSOR_CTRL], &fd_fields[FD_F_YCC_FORMAT], format);
 }
 
+void fimc_is_fd_set_cbcr_align(void __iomem *base_addr, enum fimc_is_lib_fd_cbcr_format cbcr)
+{
+	BUG_ON(!base_addr);
+
+	switch (cbcr) {
+	case FD_FORMAT_FIRST_CBCR:
+		fimc_is_hw_set_field(base_addr, &fd_regs[FD_R_SENSOR_CTRL], &fd_fields[FD_F_CBALIGNMENT], 1);
+		fimc_is_hw_set_field(base_addr, &fd_regs[FD_R_SENSOR_CTRL], &fd_fields[FD_F_CRALIGNMENT], 1);
+		break;
+	case FD_FORMAT_SECOND_CBCR:
+		fimc_is_hw_set_field(base_addr, &fd_regs[FD_R_SENSOR_CTRL], &fd_fields[FD_F_CBALIGNMENT], 0);
+		fimc_is_hw_set_field(base_addr, &fd_regs[FD_R_SENSOR_CTRL], &fd_fields[FD_F_CRALIGNMENT], 0);
+		break;
+	case FD_FORMAT_CBCR:
+		fimc_is_hw_set_field(base_addr, &fd_regs[FD_R_SENSOR_CTRL], &fd_fields[FD_F_CBALIGNMENT], 1);
+		fimc_is_hw_set_field(base_addr, &fd_regs[FD_R_SENSOR_CTRL], &fd_fields[FD_F_CRALIGNMENT], 0);
+		break;
+	case FD_FORMAT_CRCB:
+		fimc_is_hw_set_field(base_addr, &fd_regs[FD_R_SENSOR_CTRL], &fd_fields[FD_F_CBALIGNMENT], 0);
+		fimc_is_hw_set_field(base_addr, &fd_regs[FD_R_SENSOR_CTRL], &fd_fields[FD_F_CRALIGNMENT], 1);
+		break;
+	}
+}
+
 void fimc_is_fd_generate_end_intr(void __iomem *base_addr, bool generate)
 {
 	BUG_ON(!base_addr);

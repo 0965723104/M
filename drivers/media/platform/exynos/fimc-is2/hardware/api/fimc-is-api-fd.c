@@ -175,8 +175,8 @@ int fimc_is_lib_fd_open(struct fimc_is_lib *fd_lib)
 	fd_data->det = NULL;
 	fd_data->heap = NULL;
 	fd_data->format_mode = FD_LIB_FORMAT_END;
-	fd_data->prev_map_width = FD_MAP_WIDTH;
-	fd_data->prev_map_height = FD_MAP_HEIGHT;
+	fd_data->prev_map_width = FD_MAX_MAP_WIDTH;
+	fd_data->prev_map_height = FD_MAX_MAP_HEIGHT;
 	fd_data->cfg_user.structSize = sizeof(FD_DETECTOR_CFG);
 
 	/* FD library function call before certainly library load. */
@@ -329,6 +329,7 @@ void fimc_is_lib_fd_run(struct fimc_is_lib *fd_lib)
 	struct fimc_is_lib_fd *lib_data = NULL;
 	u32 detect_num = 0;
 	u32 scaled_left, scaled_top, scaled_width, scaled_height;
+	struct fd_map_addr_str *map_addr;
 #ifdef ENABLE_FD_LIB_DIRECT_MAP
 	u32 i;
 #endif
@@ -356,10 +357,13 @@ void fimc_is_lib_fd_run(struct fimc_is_lib *fd_lib)
 	set_bit(lib_data->map_history[DONE_FRAME], &lib_data->fd_lib_select);
 	if (test_bit(FD_SEL_DATA_A, &lib_data->fd_lib_select)) {
 		data_fd_lib = &lib_data->data_a;
+		map_addr = &lib_data->map_addr_a;
 	} else if (test_bit(FD_SEL_DATA_B, &lib_data->fd_lib_select)) {
 		data_fd_lib = &lib_data->data_b;
+		map_addr = &lib_data->map_addr_b;
 	} else if (test_bit(FD_SEL_DATA_C, &lib_data->fd_lib_select)) {
 		data_fd_lib = &lib_data->data_c;
+		map_addr = &lib_data->map_addr_c;
 	} else {
 		err("[FD] Library map data error\n");
 		return;
@@ -397,6 +401,8 @@ void fimc_is_lib_fd_run(struct fimc_is_lib *fd_lib)
 	for (i = 0; i < 256; i++)
 		((u8 *)hw_data.map7)[i] = i;
 #endif
+
+	fimc_is_res_cache_invalid(map_addr->map1.kvaddr, FIMC_IS_LHFD_MAP_SIZE / 3);
 
 #ifdef FD_LIB_PERFORMANCE
 	TIME_STR1();
@@ -461,7 +467,7 @@ int fimc_is_lib_fd_load_setfile(struct fimc_is_lib *fd_lib, u32 setfile_addr)
 	struct fimc_is_lib_fd *lib_data = NULL;
 	struct fd_setfile *fd_setfile = NULL;
 	bool detect_fd_setfile = false;
-	int i, j, ver;
+	int i, j;
 	ulong setfile_base;
 	ulong scenario_table;
 	ulong setfile_table;
@@ -487,14 +493,14 @@ int fimc_is_lib_fd_load_setfile(struct fimc_is_lib *fd_lib, u32 setfile_addr)
 		subip_num = header_v2->subip_num;
 		setfile_offset = header_v2->setfile_offset;
 		scenario_table = setfile_addr + sizeof(struct fd_setfile_header_v2);
-		ver = FD_SETFILE_V2;
+		lib_data->setfile.version = FD_SETFILE_V2;
 	} else {
 		scenario_num = header_v3->scenario_num;
 		subip_num = header_v3->subip_num;
 		setfile_offset = header_v3->setfile_offset;
 		scenario_table = setfile_addr + sizeof(struct fd_setfile_header_v3);
 
-		ver = FD_SETFILE_V3;
+		lib_data->setfile.version = FD_SETFILE_V3;
 		info_hw("%s: designed bit: 0x%08x\n", __func__, header_v3->designed_bit);
 		dbg_hw("%s: version code: %s\n", __func__, header_v3->version_code);
 		dbg_hw("%s: revision code: %s\n", __func__, header_v3->revision_code);
@@ -1108,21 +1114,15 @@ void fimc_is_lib_fd_size_check(struct fimc_is_lib *fd_lib,
 
 	if ((preview->width / width_4_3) ==
 		(preview->height / height_4_3)) {
-		lib_input->map_width = 640;
-		lib_input->map_height = 480;
-		margin_w = width_4_3 * 80;
-		margin_h = height_4_3 * 80;
+		lib_input->map_width = FD_MAP_WIDTH_4_3;
+		lib_input->map_height = FD_MAP_HEIGHT_4_3;
 	} else if ((preview->width / width_16_9) ==
 		(preview->height / height_16_9)) {
-		lib_input->map_width = 640;
-		lib_input->map_height = 360;
-		margin_w = width_16_9 * 20;
-		margin_h = height_16_9 * 20;
+		lib_input->map_width = FD_MAP_WIDTH_16_9;
+		lib_input->map_height = FD_MAP_HEIGHT_16_9;
 	} else {
-		lib_input->map_width = 480;
-		lib_input->map_height = 480;
-		margin_w = 320;
-		margin_h = 240;
+		lib_input->map_width = FD_MAP_WIDTH_1_1;
+		lib_input->map_height = FD_MAP_HEIGHT_1_1;
 	}
 
 	/* HW FD max input size: 32 * 16 ~ 8190 * 8190 */
@@ -1150,8 +1150,8 @@ void fimc_is_lib_fd_size_check(struct fimc_is_lib *fd_lib,
 		fd_data->data_c.input_height = preview->height;
 
 #ifdef FIXED_FD_MAPDATA
-	lib_input->map_width = FD_MAP_WIDTH;
-	lib_input->map_height = FD_MAP_HEIGHT;
+	lib_input->map_width = FD_MAX_MAP_WIDTH;
+	lib_input->map_height = FD_MAX_MAP_HEIGHT;
 #endif
 
 	if ((fd_data->prev_map_width == lib_input->map_width) &&

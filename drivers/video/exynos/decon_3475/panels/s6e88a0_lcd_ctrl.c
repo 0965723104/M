@@ -29,11 +29,6 @@
 
 #include "s6e88a0_param.h"
 
-#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
-#include <linux/input/doubletap2wake.h>
-extern void sensor_prox_report(unsigned int detected);
-extern void dt2w_screen_report(unsigned int detected);
-#endif
 
 #ifdef CONFIG_PANEL_AID_DIMMING
 static unsigned int get_actual_br_value(struct dsim_device *dsim, int index)
@@ -1490,11 +1485,6 @@ static int dsim_panel_displayon(struct dsim_device *dsim)
 		}
 	}
 	panel->state = PANEL_STATE_RESUMED;
-	#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
-		sensor_prox_report(0);  // LukasAddon : set  flg_sensor_prox_detecting to false if display on
-				// because some times prox sensor didnt response it state in event.
-			dt2w_screen_report(1); // LukasAddon : set dt2w event disabled
-	#endif
 	dsim_panel_set_brightness(dsim, 1);
 
 displayon_err:
@@ -1521,9 +1511,7 @@ static int dsim_panel_suspend(struct dsim_device *dsim)
 		}
 	}
 	panel->state = PANEL_STATE_SUSPENED;
-	#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
-		dt2w_screen_report(0); // LukasAddon : set dt2w event enabled
-	#endif
+
 suspend_err:
 	mutex_unlock(&panel->lock);
 

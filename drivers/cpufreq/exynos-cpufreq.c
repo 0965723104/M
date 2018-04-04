@@ -35,9 +35,9 @@
 #include <plat/cpu.h>
 
 #define VOLT_RANGE_STEP		25000
-#define MIN_VOLT 300000
+#define MIN_VOLT 200000
 #define MAX_VOLT_ 1400000
-#define VOLT_DIV		12500
+#define VOLT_DIV		6250
 
 #ifdef CONFIG_SMP
 struct lpj_info {
@@ -677,7 +677,7 @@ static ssize_t show_volt_table(struct kobject *kobj,
 	return count;
 }
 
-extern void exynos3475_restoreDefaultVolts(void);
+
 
 static ssize_t store_volt_table(struct kobject *kobj, struct attribute *attr,
 			      const char *buf, size_t count)
@@ -701,9 +701,6 @@ static ssize_t store_volt_table(struct kobject *kobj, struct attribute *attr,
     if (target_freq == -42) // its magic!
 		goto appendAllVolts;
 		
-	if (target_freq == -43) // more magic!
-		goto restoreDefaultVolts;
-	
 	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
 		unsigned int freq = table[i].frequency;
 		if (freq == CPUFREQ_ENTRY_INVALID)
@@ -741,10 +738,6 @@ appendAllVolts:;
 	printk(KERN_INFO "[Voltage Control] CPU Voltage table change request evaluation success, setting ALL values : %d %d", target_freq, microvolts);
 	return count;
 	
-restoreDefaultVolts:;
-	printk(KERN_INFO "[Voltage Control] CPU Voltage table change request evaluation success, setting DEFAULT values : %d %d", target_freq, microvolts);
-	exynos3475_restoreDefaultVolts();
-	return count;
 }
 
 static ssize_t show_min_freq(struct kobject *kobj,
@@ -809,6 +802,7 @@ static ssize_t store_max_freq(struct kobject *kobj, struct attribute *attr,
 }
 
 define_one_global_ro(freq_table);
+define_one_global_rw(volt_table);
 define_one_global_rw(min_freq);
 define_one_global_rw(max_freq);
 
@@ -824,6 +818,7 @@ static struct attribute *cpufreq_attributes[] = {
 	&freq_table.attr,
 	&min_freq.attr,
 	&max_freq.attr,
+	&volt_table.attr,
 	NULL
 };
 

@@ -19,65 +19,6 @@ config ARCH_EXYNOS3
 	help
 	  Samsung EXYNOS3 (Cortex-A7) SoC based systems
 
-choice
-	prompt "Exynos device target"
-	default MACH_EXYNOS3575_NONE
-
-config MACH_EXYNOS3475_NONE
-	bool "None"
-config MACH_EXYNOS3475_ON5LTE_CHN
-	bool "Galaxy ON5 International (on5ltexx)"
-	select EXYNOS_DTBTOOL
-
-config MACH_EXYNOS3475_J2LTE_EUR
-	bool "Galaxy J2 International (j2ltexx)"
-	select EXYNOS_DTBTOOL
-
-config MACH_EXYNOS3475_ON5LTE_SWA
-	bool "Galaxy ON5 International (on5ltexx)"
-	select EXYNOS_DTBTOOL
-
-endchoice
-
-menuconfig EXYNOS_DTBTOOL
- 	bool "Build dtbtool for Exynos"
-	select DTC
- 	default n
- 	help
- 	  Say Y here to build the dtbtool for Exynos,
- 	  which is necessary to create DTB images for
- 	  use in Exynos boot images.
- 
- if EXYNOS_DTBTOOL
- 
- config EXYNOS_DTBH_PLATFORM_CODE
- 	hex "Exynos DTBH hex platform code"
- 	default 0x50a6
- 	help
- 	  This value is verified by the bootloader
- 	  to determine if the DTB image is valid for
- 	  the device that the kernel is booting on.
- 
- config EXYNOS_DTBH_SUBTYPE_CODE
- 	hex "Exynos DTBH hex subtype code"
- 	default 0x217584da
- 	help
- 	  This value is verified by the bootloader
- 	  to determine if the DTB image is valid for
- 	  the device that the kernel is booting on.
- 
- config EXYNOS_DTBH_PAGE_SIZE
- 	int "Exynos DTBH page size"
- 	range 2048 131072
- 	default 2048
- 	help
- 	  Page size used to pad the DTB image.
- 	  It should be equal to the page size of
- 	  the Exynos boot image.
- 	  Must be divisible by 2048.
- 
- endif
-
 config ARCH_EXYNOS4
 	bool "SAMSUNG EXYNOS4"
 	default y
@@ -206,6 +147,12 @@ config EXYNOS_ASV_MARGIN_TEST
 	bool "Enable Margin Test"
 	default n
 	depends on EXYNOS_ASV
+
+config SKIP_HW_BREAKPOINT
+	bool "support skip hw breakpoint"
+	default n
+	help
+	  Support early param for T32 onchip breakpoint
 
 choice
 	prompt "Revision Type"
@@ -354,8 +301,8 @@ config EXYNOS5_DYNAMIC_CPU_HOTPLUG
 
 config EXYNOS_CONTENT_PATH_PROTECTION
 	bool "Exynos Content Path Protection"
-	depends on (ARM_TRUSTZONE && ARCH_EXYNOS5)
-	default y
+	depends on (ARM_TRUSTZONE)
+	default n
 	help
 	  Enable content path protection of EXYNOS.
 
@@ -945,6 +892,12 @@ config TIMA_TEST_INFRA
 	default n
 	help
 	  Kernel bits of the TIMA test infrastructure
+     
+config SEC_BAT_AUT
+	bool "Samsung TN Bat Automation Test Feature"
+	default n
+	help
+	  Samsung TN Bat Automation Test
 
 # CP Secure boot
 config CP_SECURE_BOOT

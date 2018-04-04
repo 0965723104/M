@@ -144,14 +144,12 @@ static int gpu_validate_attrib_data(struct exynos_context *platform)
 	platform->attrib = attrib;
 
 	data = gpu_get_attrib_data(attrib, GPU_MAX_CLOCK);
-	platform->gpu_max_clock = data == 0 ? 667 : (u32) data;
+	platform->gpu_max_clock = data == 0 ? 500 : (u32) data;
 	data = gpu_get_attrib_data(attrib, GPU_MAX_CLOCK_LIMIT);
-	platform->gpu_max_clock_limit = data == 0 ? 667 : (u32) data;
+	platform->gpu_max_clock_limit = data == 0 ? 500 : (u32) data;
 	data = gpu_get_attrib_data(attrib, GPU_MIN_CLOCK);
 	platform->gpu_min_clock = data == 0 ? 160 : (u32) data;
 	data = gpu_get_attrib_data(attrib, GPU_DVFS_BL_CONFIG_CLOCK);
-	data = gpu_get_attrib_data(attrib, GPU_MIN_CLOCK_LIMIT);
-	platform->gpu_min_clock_limit = data == 0 ? 260 : (u32) data;
 	platform->gpu_dvfs_config_clock = data == 0 ? 266 : (u32) data;
 	data = gpu_get_attrib_data(attrib, GPU_DVFS_START_CLOCK);
 	platform->gpu_dvfs_start_clock = data == 0 ? 266 : (u32) data;
@@ -226,10 +224,6 @@ static int gpu_validate_attrib_data(struct exynos_context *platform)
 	platform->tmu_lock_clk[THROTTLING3] = data == 0 ? 266 : (u32) data;
 	data = gpu_get_attrib_data(attrib, GPU_TEMP_THROTTLING4);
 	platform->tmu_lock_clk[THROTTLING4] = data == 0 ? 266 : (u32) data;
-	data = gpu_get_attrib_data(attrib, GPU_TEMP_THROTTLING5);
-	platform->tmu_lock_clk[THROTTLING5] = data == 0 ? 266 : (u32) data;
-	data = gpu_get_attrib_data(attrib, GPU_TEMP_TRIPPING);
-	platform->tmu_lock_clk[THROTTLING6] = data == 0 ? 266 : (u32) data;
 	data = gpu_get_attrib_data(attrib, GPU_TEMP_TRIPPING);
 	platform->tmu_lock_clk[TRIPPING] = data == 0 ? 266 : (u32) data;
 
@@ -488,27 +482,27 @@ static kbase_attribute config_attributes[] = {
 	},
 	{
 		KBASE_CONFIG_ATTR_JS_RESET_TIMEOUT_MS,
-		16000 /* 16000ms before cancelling stuck jobs */
+		50 /* 500ms before cancelling stuck jobs */
 	},
 	{
 		KBASE_CONFIG_ATTR_JS_SOFT_STOP_TICKS,
-		9500 /* 475 sec */
+		200 /* 10 sec */
 	},
 	{
 		KBASE_CONFIG_ATTR_JS_HARD_STOP_TICKS_SS,
-		9501 /* 475.05 sec */
+		201 /* 10.05 sec */
 	},
 	{
 		KBASE_CONFIG_ATTR_JS_RESET_TICKS_SS,
-		9504 /* 475.2 sec */
+		204 /* 10.2 sec */
 	},
 	{
 		KBASE_CONFIG_ATTR_JS_HARD_STOP_TICKS_NSS,
-		9506 /* 475.3 sec */
+		206 /* 10.3 sec */
 	},
 	{
 		KBASE_CONFIG_ATTR_JS_RESET_TICKS_NSS,
-		9507 /* 475.35 sec */
+		207 /* 10.35 sec */
 	},
 	{
 		KBASE_CONFIG_ATTR_CPU_SPEED_FUNC,

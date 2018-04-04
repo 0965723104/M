@@ -430,7 +430,6 @@ int sky82896_array_write(const struct SKY82896_rom_data *eprom_ptr, int eprom_si
 static int s6d7aa0_read_init_info(struct dsim_device *dsim)
 {
 	int i = 0;
-	int ret;
 	struct panel_private *panel = &dsim->priv;
 
 	dsim_info("MDD : %s was called\n", __func__);
@@ -449,17 +448,8 @@ static int s6d7aa0_read_init_info(struct dsim_device *dsim)
 		dsim_info("%02x, ", dsim->priv.id[i]);
 	dsim_info("\n");
 
-	ret = dsim_write_hl_data(dsim, SEQ_TEST_KEY_OFF_F0, ARRAY_SIZE(SEQ_TEST_KEY_OFF_F0));
-	if (ret < 0) {
-		dsim_err("%s : fail to write CMD : SEQ_TEST_KEY_OFF_F0\n", __func__);
-		goto read_fail;
-	}
 read_exit:
 	return 0;
-
-read_fail:
-	return -ENODEV;
-
 }
 
 static int s6d7aa0_displayon(struct dsim_device *dsim)
@@ -585,7 +575,7 @@ static int s6d7aa0_init(struct dsim_device *dsim)
 
 	dsim_info("MDD : %s was called\n", __func__);
 
-	msleep(100);
+	msleep(20);
 
 	ret = dsim_write_hl_data(dsim, SEQ_PASSWD1, ARRAY_SIZE(SEQ_PASSWD1));
 	if (ret < 0) {
@@ -825,11 +815,12 @@ probe_exit:
 }
 
 struct dsim_panel_ops s6d7aa0_panel_ops = {
-	.early_probe = NULL,
-	.probe		= s6d7aa0_probe,
-	.displayon	= s6d7aa0_displayon,
-	.exit		= s6d7aa0_exit,
-	.init		= s6d7aa0_init,
+	.early_probe	= NULL,
+	.probe			= s6d7aa0_probe,
+	.displayon		= s6d7aa0_displayon,
+	.displayon_late	= s6d7aa0_displayon_late,
+	.exit			= s6d7aa0_exit,
+	.init			= s6d7aa0_init,
 };
 
 

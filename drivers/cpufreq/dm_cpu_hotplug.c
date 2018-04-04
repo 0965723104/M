@@ -738,6 +738,8 @@ void event_hotplug_in(void)
 static int exynos_dm_hotplug_notifier(struct notifier_block *notifier,
 					unsigned long pm_event, void *v)
 {
+	int i, ret = 0;
+
 	switch (pm_event) {
 	case PM_SUSPEND_PREPARE:
 		mutex_lock(&thread_lock);
@@ -755,6 +757,24 @@ static int exynos_dm_hotplug_notifier(struct notifier_block *notifier,
 	case PM_POST_SUSPEND:
 		mutex_lock(&thread_lock);
 		exynos_dm_hotplug_enable();
+
+		mutex_lock(&dm_hotplug_lock);
+		if (exynos_dm_hotplug_disabled()) {
+			for (i = 1; i < setup_max_cpus; i++) {
+				if (!cpu_online(i)) {
+					ret = cpu_up(i);
+					if (ret) {
+						pr_err("post hotplug in failed\n");
+						break;
+					}
+				}
+			}
+			if (!ret)
+				prev_cmd = CMD_NORMAL;
+			in_low_power_mode = false;
+			delay = out_delay;
+		}
+		mutex_unlock(&dm_hotplug_lock);
 
 		dm_hotplug_task =
 			kthread_create(on_run, NULL, "thread_hotplug");

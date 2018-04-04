@@ -585,7 +585,7 @@ int mfc_alloc_dev_context_buffer(struct s5p_mfc_dev *dev,
 
 #ifdef CONFIG_EXYNOS_CONTENT_PATH_PROTECTION
 	if (buf_type == MFCBUF_DRM) {
-		alloc_ctx = dev->alloc_ctx_drm;
+		alloc_ctx = dev->alloc_ctx_drm_fw;
 		ctx_buf = &dev->ctx_buf_drm;
 	}
 #endif
@@ -2524,6 +2524,11 @@ static int s5p_mfc_init_decode(struct s5p_mfc_ctx *ctx)
 	/* Enable realloc interface if SEI is enabled */
 	if (dec->sei_parse && FW_HAS_SEI_S3D_REALLOC(dev))
 		reg |= (0x1 << S5P_FIMV_D_SEI_NEED_INIT_BUFFER_SHIFT);
+
+	if (IS_MFCv92(dev)) {
+		/* Enable recovery SEI parsing */
+		reg |= (0x1 << S5P_FIMV_D_SEI_RECOVERY_PARSING_ENABLE);
+	}
 	WRITEL(reg, S5P_FIMV_D_SEI_ENABLE);
 
 	WRITEL(ctx->inst_no, S5P_FIMV_INSTANCE_ID);

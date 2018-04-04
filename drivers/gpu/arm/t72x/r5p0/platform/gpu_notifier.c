@@ -67,14 +67,6 @@ static int gpu_tmu_hot_check_and_work(struct kbase_device *kbdev, unsigned long 
 		lock_clock = platform->tmu_lock_clk[THROTTLING4];
 		GPU_LOG(DVFS_INFO, DUMMY, 0u, 0u, "THROTTLING4\n");
 		break;
-	case GPU_THROTTLING5:
-		lock_clock = platform->tmu_lock_clk[THROTTLING5];
-		GPU_LOG(DVFS_INFO, DUMMY, 0u, 0u, "THROTTLING5\n");
-		break;
-	case GPU_THROTTLING6:
-		lock_clock = platform->tmu_lock_clk[THROTTLING6];
-		GPU_LOG(DVFS_INFO, DUMMY, 0u, 0u, "THROTTLING6\n");
-		break;
 	case GPU_TRIPPING:
 		lock_clock = platform->tmu_lock_clk[TRIPPING];
 		GPU_LOG(DVFS_INFO, DUMMY, 0u, 0u, "TRIPPING\n");
@@ -269,7 +261,7 @@ static int pm_callback_change_dvfs_level(struct kbase_device *kbdev)
 				gpu_get_cur_clock(platform), platform->gpu_dvfs_start_clock,
 				gpu_get_cur_voltage(platform), platform->voltage_margin, platform->cur_voltage);
 
-	gpu_set_target_clk_vol(platform->gpu_min_clock, false);
+	gpu_set_target_clk_vol(platform->gpu_dvfs_start_clock, false);
 	gpu_dvfs_reset_env_data(kbdev);
 
 	return 0;
@@ -288,7 +280,7 @@ static int pm_callback_runtime_on(struct kbase_device *kbdev)
 	gpu_dvfs_start_env_data_gathering(kbdev);
 #ifdef CONFIG_MALI_DVFS
 	if (platform->dvfs_status && platform->wakeup_lock)
-		gpu_set_target_clk_vol(platform->gpu_min_clock, false);
+		gpu_set_target_clk_vol(platform->gpu_dvfs_start_clock, false);
 	else
 #endif /* CONFIG_MALI_DVFS */
 		gpu_set_target_clk_vol(platform->cur_clock, false);

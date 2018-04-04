@@ -27,3 +27,4 @@ obj-$(CONFIG_SEC_MISC)         += sec_misc.o
 obj-$(CONFIG_ARGOS)		+= sec_argos.o
 # Samsung sec bsp Feature
 obj-$(CONFIG_SEC_BSP)          += sec_bsp.o
+obj-$(CONFIG_SEC_INITCALL_DEBUG)		+= sec_initcall_debug.o

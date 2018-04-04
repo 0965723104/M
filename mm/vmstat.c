@@ -779,7 +779,6 @@ const char * const vmstat_text[] = {
 
 #ifdef CONFIG_NUMA_BALANCING
 	"numa_pte_updates",
-	"numa_huge_pte_updates",
 	"numa_hint_faults",
 	"numa_hint_faults_local",
 	"numa_pages_migrated",
@@ -1142,10 +1141,7 @@ static int vmstat_show(struct seq_file *m, void *arg)
 	unsigned long *l = arg;
 	unsigned long off = l - (unsigned long *)m->private;
 
-	// seq_printf(m, "%s %lu\n", vmstat_text[off], *l);
-	seq_puts(m, vmstat_text[off]);
-	seq_put_decimal_ull(m, ' ',*l);
-	seq_putc(m, '\n');
+	seq_printf(m, "%s %lu\n", vmstat_text[off], *l);
 	return 0;
 }
 

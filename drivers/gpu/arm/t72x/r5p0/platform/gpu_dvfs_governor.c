@@ -192,7 +192,7 @@ static int gpu_dvfs_governor_booster(struct exynos_context *platform, int utiliz
 
 	cur_weight = platform->cur_clock*utilization;
 	/* booster_threshold = current clock * set the percentage of utilization */
-	booster_threshold = platform->cur_clock * 70;
+	booster_threshold = platform->cur_clock * 50;
 
 	dvfs_table_lock = gpu_dvfs_get_level(platform->gpu_max_clock);
 
@@ -316,7 +316,7 @@ int gpu_dvfs_governor_setting(struct exynos_context *platform, int governor_type
 #else /* CONFIG_MALI_DVFS */
 	platform->table = (gpu_dvfs_info *)gpu_get_attrib_data(platform->attrib, GPU_GOVERNOR_TABLE_DEFAULT);
 	platform->table_size = (u32)gpu_get_attrib_data(platform->attrib, GPU_GOVERNOR_TABLE_SIZE_DEFAULT);
-	platform->step = gpu_dvfs_get_level(platform->gpu_min_clock);
+	platform->step = gpu_dvfs_get_level(platform->gpu_dvfs_start_clock);
 #endif /* CONFIG_MALI_DVFS */
 	platform->cur_clock = platform->table[platform->step].clock;
 

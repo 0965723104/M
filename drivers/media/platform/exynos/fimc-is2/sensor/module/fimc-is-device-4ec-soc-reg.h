@@ -2350,11 +2350,11 @@ static const u32 s5k4ecgx_init_reg2[] = {
 //System Clock & Output clock (Pclk)
 	0x002A021A,
 	0x0F123A98,	//REG_TC_IPRM_OpClk4KHz_0 //SCLK : 60Mhz
-	0x0F1229FE,	//REG_TC_IPRM_MinOutRate4KHz_0
-	0x0F122AF8,	//REG_TC_IPRM_MaxOutRate4KHz_0
+	0x0F122904,	//REG_TC_IPRM_MinOutRate4KHz_0
+	0x0F1229FE,	//REG_TC_IPRM_MaxOutRate4KHz_0
 	0x0F124F1A,	//REG_TC_IPRM_MinOutRate4KHz_1
-	0x0F1229FE,	//REG_TC_IPRM_MinOutRate4KHz_1 //PCLK Min : 43Mhz
-	0x0F122AF8,	//REG_TC_IPRM_MaxOutRate4KHz_1 //PCLK Max : 44Mhz
+	0x0F122904,	//REG_TC_IPRM_MinOutRate4KHz_1 //PCLK Min : 43Mhz
+	0x0F1229FE,	//REG_TC_IPRM_MaxOutRate4KHz_1 //PCLK Max : 44Mhz
 
 //==================================================================================
 // 11.Auto Flicker Detection
@@ -3433,8 +3433,8 @@ static const u32 s5k4ecgx_init_reg2[] = {
 	0x0F120280,	//REG_0TC_PCFG_usWidth
 	0x0F1201E0,	//REG_0TC_PCFG_usHeight
 	0x0F120005,	//REG_0TC_PCFG_Format //5:YUV}, 7:RAW}, 9:JPEG
-	0x0F122AF8,	//REG_0TC_PCFG_usMaxOut4KHzRate
-	0x0F1229FE,	//REG_0TC_PCFG_usMinOut4KHzRate
+	0x0F1229FE,	//REG_0TC_PCFG_usMaxOut4KHzRate
+	0x0F122904,	//REG_0TC_PCFG_usMinOut4KHzRate
 	0x0F120100,	//REG_0TC_PCFG_OutClkPerPix88
 	0x0F120300,	//REG_0TC_PCFG_uBpp88
 	0x0F120012,	//REG_0TC_PCFG_PVIMask //[1]:PCLK Inversion
@@ -3447,13 +3447,8 @@ static const u32 s5k4ecgx_init_reg2[] = {
 	0x0F1203E8,	//REG_0TC_PCFG_usMaxFrTimeMsecMult10 //03E8h:10fps
 	0x0F12014A,	//REG_0TC_PCFG_usMinFrTimeMsecMult10 //014Ah:30fps
 	0x002A02D0,
-#if defined(CONFIG_CAMERA_REAR_SENSOR_VFLIP)
-	0x0F120003,	 //REG_0TC_PCFG_uPrevMirror
-	0x0F120003,	 //REG_0TC_PCFG_uCaptureMirror
-#else
 	0x0F120000,	 //REG_0TC_PCFG_uPrevMirror
 	0x0F120000,	 //REG_0TC_PCFG_uCaptureMirror
-#endif
 
 //===================================================================
 // Capture
@@ -3463,8 +3458,8 @@ static const u32 s5k4ecgx_init_reg2[] = {
 	0x0F120A10,	//REG_0TC_CCFG_usWidth //2576
 	0x0F12078C,	//REG_0TC_CCFG_usHeight //1932
 	0x0F120005,	//REG_0TC_CCFG_Format //5:YUV}, 7:RAW}, 9:JPEG
-	0x0F122AF8,	//REG_0TC_CCFG_usMaxOut4KHzRate
-	0x0F1229FE,	//REG_0TC_CCFG_usMinOut4KHzRate
+	0x0F1229FE,	//REG_0TC_CCFG_usMaxOut4KHzRate
+	0x0F122904,	//REG_0TC_CCFG_usMinOut4KHzRate
 	0x0F120100,	//REG_0TC_CCFG_OutClkPerPix88
 	0x0F120300,	//REG_0TC_CCFG_uBpp88
 	0x0F120012,	//REG_0TC_CCFG_PVIMask //[1]:PCLK Inversion
@@ -3921,6 +3916,13 @@ static const u32 s5k4ecgx_WB_Auto[] = {
 	0x00287000,
 	0x002A04E6,
 	0x0F12077F,
+
+	0x002A1826,
+	0x0F120100, //fls_afl_FlashWP_Weight2_0_
+	0x0F1200C0, //fls_afl_FlashWP_Weight2_1_
+	0x0F120080, //fls_afl_FlashWP_Weight2_2_
+	0x0F12000A, //fls_afl_FlashWP_Weight2_3_
+	0x0F120000, //fls_afl_FlashWP_Weight2_4_
 };
 
 static const u32 s5k4ecgx_WB_Sunny[] = {
@@ -3940,6 +3942,13 @@ static const u32 s5k4ecgx_WB_Sunny[] = {
 
 	0x002A04C6, //RGB gain changed
 	0x0F120001,
+
+	0x002A1826,
+	0x0F120000, //fls_afl_FlashWP_Weight2_0_
+	0x0F120000, //fls_afl_FlashWP_Weight2_1_
+	0x0F120000, //fls_afl_FlashWP_Weight2_2_
+	0x0F120000, //fls_afl_FlashWP_Weight2_3_
+	0x0F120000, //fls_afl_FlashWP_Weight2_4_
 };
 
 static const u32 s5k4ecgx_WB_Cloudy[] = {
@@ -3959,6 +3968,13 @@ static const u32 s5k4ecgx_WB_Cloudy[] = {
 
 	0x002A04C6,
 	0x0F120001,
+
+	0x002A1826,
+	0x0F120000, //fls_afl_FlashWP_Weight2_0_
+	0x0F120000, //fls_afl_FlashWP_Weight2_1_
+	0x0F120000, //fls_afl_FlashWP_Weight2_2_
+	0x0F120000, //fls_afl_FlashWP_Weight2_3_
+	0x0F120000, //fls_afl_FlashWP_Weight2_4_
 };
 
 static const u32 s5k4ecgx_WB_Tungsten[] = {
@@ -3978,6 +3994,13 @@ static const u32 s5k4ecgx_WB_Tungsten[] = {
 
 	0x002A04C6,
 	0x0F120001,
+
+	0x002A1826,
+	0x0F120000, //fls_afl_FlashWP_Weight2_0_
+	0x0F120000, //fls_afl_FlashWP_Weight2_1_
+	0x0F120000, //fls_afl_FlashWP_Weight2_2_
+	0x0F120000, //fls_afl_FlashWP_Weight2_3_
+	0x0F120000, //fls_afl_FlashWP_Weight2_4_
 };
 
 static const u32 s5k4ecgx_WB_Fluorescent[] = {
@@ -3997,6 +4020,13 @@ static const u32 s5k4ecgx_WB_Fluorescent[] = {
 
 	0x002A04C6,
 	0x0F120001,
+
+	0x002A1826,
+	0x0F120000, //fls_afl_FlashWP_Weight2_0_
+	0x0F120000, //fls_afl_FlashWP_Weight2_1_
+	0x0F120000, //fls_afl_FlashWP_Weight2_2_
+	0x0F120000, //fls_afl_FlashWP_Weight2_3_
+	0x0F120000, //fls_afl_FlashWP_Weight2_4_
 };
 
 static const u32 s5k4ecgx_WDR_on[] = {
@@ -7413,20 +7443,6 @@ static const u32 s5k4ecgx_Flash_init[] = {
 	0x0F120100,
 	0x0F120100,
 
-	0x002A1826,
-
-	0x0F120100,	/* fls_afl_FlashWP_Weight  flash NB default */
-	0x0F1200C0,
-	0x0F120080,
-	0x0F12000A,
-	0x0F120000,
-
-	0x0F120030,	/* fls_afl_FlashWP_Weight  flash NB default */
-	0x0F120040,
-	0x0F120048,
-	0x0F120050,
-	0x0F120060,
-
 	0x002A4784,
 	0x0F1200A0,	/* TNP_Regs_FlsWeightRIn  weight tune start in*/
 	0x0F1200C0,
@@ -7569,282 +7585,6 @@ static const u32 s5k4ecgx_60hz_fixed[] = {
 	0x0F120001,
 };
 
-#ifdef CONFIG_VIDEO_S5K4ECGX_SENSOR_JPEG
-/* 2560 x 1920 */
-static const u32  s5k4ecgx_5M_Capture[] = {
-	0xFCFCD000,
-
-	0x00287000,
-	0x002A0258,
-	0x0F120A00,		/*REG_TC_GP_CapReqInputWidth 2560 */
-	0x0F120780,		/*REG_TC_GP_CapReqInputHeight 1920 */
-	0x0F120010,		/*REG_TC_GP_CapInputWidthOfs (2592-2560)/2 */
-	0x0F12000C,		/*REG_TC_GP_CapInputHeightOfs (1944-1920)/2 */
-
-	0x002A0264,
-	0x0F120001,		/*REG_TC_GP_bUseReqInputInCap */
-
-	0x002A049C,
-	0x0F120A00,		/*REG_TC_PZOOM_CapZoomReqInputWidth 2560 */
-	0x0F120780,		/*REG_TC_PZOOM_CapZoomReqInputHeight 1920 */
-	0x0F120000,		/*REG_TC_PZOOM_CapZoomReqInputWidthOfs */
-	0x0F120000,		/*REG_TC_PZOOM_CapZoomReqInputHeightOfs */
-
-	0x002A047C,
-	0x0F120001,		/*REG_TC_THUMB_Thumb_bActive */
-	0x0F120280,		/*REG_TC_THUMB_Thumb_uWidth 640 */
-	0x0F1201E0,		/*REG_TC_THUMB_Thumb_uHeight 480 */
-
-	0x002A0398,
-	0x0F120A00,		/*REG_0TC_CCFG_usWidth 2560 */
-	0x0F120780,		/*REG_0TC_CCFG_usHeight 1920 */
-
-	0x002A024E,
-	0x0F120001,		/*REG_TC_GP_NewConfigSync */
-	0x002A0270,
-	0x0F120001,		/*REG_TC_GP_CapConfigChanged */
-};
-
-/* 2048 x 1536 */
-static const u32  s5k4ecgx_3M_Capture[] = {
-	0xFCFCD000,
-
-	0x00287000,
-	0x002A0258,
-	0x0F120A00,		/*REG_TC_GP_CapReqInputWidth 2560 */
-	0x0F120780,		/*REG_TC_GP_CapReqInputHeight 1920 */
-	0x0F120010,		/*REG_TC_GP_CapInputWidthOfs (2592-2560)/2 */
-	0x0F12000C,		/*REG_TC_GP_CapInputHeightOfs (1944-1920)/2 */
-
-	0x002A0264,
-	0x0F120001,		/*REG_TC_GP_bUseReqInputInCap */
-
-	0x002A049C,
-	0x0F120A00,		/*REG_TC_PZOOM_CapZoomReqInputWidth 2560 */
-	0x0F120780,		/*REG_TC_PZOOM_CapZoomReqInputHeight 1920 */
-	0x0F120000,		/*REG_TC_PZOOM_CapZoomReqInputWidthOfs */
-	0x0F120000,		/*REG_TC_PZOOM_CapZoomReqInputHeightOfs */
-
-	0x002A047C,
-	0x0F120001,		/*REG_TC_THUMB_Thumb_bActive */
-	0x0F120280,		/*REG_TC_THUMB_Thumb_uWidth 640 */
-	0x0F1201E0,		/*REG_TC_THUMB_Thumb_uHeight 480 */
-
-	0x002A0398,
-	0x0F120800,		/*REG_0TC_CCFG_usWidth 2048 */
-	0x0F120600,		/*REG_0TC_CCFG_usHeight 1536 */
-
-	0x002A024E,
-	0x0F120001,		/*REG_TC_GP_NewConfigSync */
-	0x002A0270,
-	0x0F120001,		/*REG_TC_GP_CapConfigChanged */
-};
-
-/* 1600 x 1200 */
-static const u32  s5k4ecgx_2M_Capture[] = {
-	0xFCFCD000,
-
-	0x00287000,
-	0x002A0258,
-	0x0F120A00,		/*REG_TC_GP_CapReqInputWidth 2560 */
-	0x0F120780,		/*REG_TC_GP_CapReqInputHeight 1920 */
-	0x0F120010,		/*REG_TC_GP_CapInputWidthOfs (2592-2560)/2 */
-	0x0F12000C,		/*REG_TC_GP_CapInputHeightOfs (1944-1920)/2 */
-
-	0x002A0264,
-	0x0F120001,		/*REG_TC_GP_bUseReqInputInCap */
-
-	0x002A049C,
-	0x0F120A00,		/*REG_TC_PZOOM_CapZoomReqInputWidth 2560 */
-	0x0F120780,		/*REG_TC_PZOOM_CapZoomReqInputHeight 1920 */
-	0x0F120000,		/*REG_TC_PZOOM_CapZoomReqInputWidthOfs */
-	0x0F120000,		/*REG_TC_PZOOM_CapZoomReqInputHeightOfs */
-
-	0x002A047C,
-	0x0F120001,		/*REG_TC_THUMB_Thumb_bActive */
-	0x0F120280,		/*REG_TC_THUMB_Thumb_uWidth 640 */
-	0x0F1201E0,		/*REG_TC_THUMB_Thumb_uHeight 480 */
-
-	0x002A0398,
-	0x0F120640,		/*REG_0TC_CCFG_usWidth 1600 */
-	0x0F1204B0,		/*REG_0TC_CCFG_usHeight 1200 */
-
-	0x002A024E,
-	0x0F120001,		/*REG_TC_GP_NewConfigSync */
-	0x002A0270,
-	0x0F120001,		/*REG_TC_GP_CapConfigChanged */
-};
-/* 1280 x 960 */
-static const u32  s5k4ecgx_1M_Capture[] = {
-	0xFCFCD000,
-
-	0x0028D000,
-	0x002AE410,
-	0x0F123E01,
-
-	0x00287000,
-	0x002A18AC,
-	0x0F120060, /*senHal_uAddColsBin */
-	0x0F120060, /*senHal_uAddColsNoBin */
-	0x0F120A20, /*senHal_uMinColsBin */
-	0x0F120AB0, /*senHal_uMinColsNoBin */
-
-	0x002A0250,
-	0x0F120A00, //REG_TC_GP_PrevReqInputWidth //2560
-	0x0F120780, //REG_TC_GP_PrevReqInputHeight //1920
-	0x0F120010, //REG_TC_GP_PrevInputWidthOfs //(2592-2560)/2
-	0x0F12000C, //REG_TC_GP_PrevInputHeightOfs //(1944-1920)/2
-
-	0x002A0262,
-	0x0F120001, /*REG_TC_GP_bUseReqInputInPre */
-
-	0x002A0494,
-	0x0F120A00,	//REG_TC_PZOOM_PrevZoomReqInputWidth //2560
-	0x0F120780,	//REG_TC_PZOOM_PrevZoomReqInputHeight //1920
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputWidthOfs
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputHeightOfs
-
-	0x002A02A6,
-	0x0F120500, /*REG_0TC_PCFG_usWidth //1280 */
-	0x0F1203C0, /*REG_0TC_PCFG_usHeight //960 */
-
-	0x002A0266,
-	0x0F120000,
-	0x002A026A,
-	0x0F120001,
-	0x002A024E,
-	0x0F120001,
-	0x002A0268,
-	0x0F120001,
-};
-
-/* 1024 x 768 */
-static const u32 s5k4ecgx_XGA_Capture[] = {
-	0xFCFCD000,
-
-	0x0028D000,
-	0x002AE410,
-	0x0F123E01,
-
-	0x00287000,
-	0x002A18AC,
-	0x0F120060,	//senHal_uAddColsBin
-	0x0F120060,	//senHal_uAddColsNoBin
-	0x0F1206C8,	//senHal_uMinColsBin
-	0x0F1206C8,	//senHal_uMinColsNoBin
-
-	0x002A0250,
-	0x0F120A00, //REG_TC_GP_PrevReqInputWidth //2560
-	0x0F120780, //REG_TC_GP_PrevReqInputHeight //1920
-	0x0F120010, //REG_TC_GP_PrevInputWidthOfs //(2592-2560)/2
-	0x0F12000C, //REG_TC_GP_PrevInputHeightOfs //(1944-1920)/2
-
-	0x002A0262,
-	0x0F120001,	//REG_TC_GP_bUseReqInputInPre
-
-	0x002A0494,
-	0x0F120A00,	//REG_TC_PZOOM_PrevZoomReqInputWidth //2560
-	0x0F120780,	//REG_TC_PZOOM_PrevZoomReqInputHeight //1920
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputWidthOfs
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputHeightOfs
-
-	0x002A02A6,
-	0x0F120400,	//REG_0TC_PCFG_usWidth //1024
-	0x0F120300,	//REG_0TC_PCFG_usHeight //768
-
-	0x002A0266,
-	0x0F120000,	//REG_TC_GP_ActivePrevConfig
-	0x002A026A,
-	0x0F120001,	//REG_TC_GP_PrevOpenAfterChange
-	0x002A024E,
-	0x0F120001,	//REG_TC_GP_NewConfigSync
-	0x002A0268,
-	0x0F120001,	//REG_TC_GP_PrevConfigChanged
-};
-
-/* 640 x 480 */
-static const u32  s5k4ecgx_VGA_Capture[] = {
-	0xFCFCD000,
-
-	0x00287000,
-	0x002A18AC,
-	0x0F120060,	//senHal_uAddColsBin
-	0x0F120060,	//senHal_uAddColsNoBin
-	0x0F1206C8,	//senHal_uMinColsBin
-	0x0F1206C8,	//senHal_uMinColsNoBin
-
-	0x002A0250,
-	0x0F120A00,	//REG_TC_GP_PrevReqInputWidth //2560
-	0x0F120780,	//REG_TC_GP_PrevReqInputHeight //1920
-	0x0F120010,	//REG_TC_GP_PrevInputWidthOfs //(2592-2560)/2
-	0x0F12000C,	//REG_TC_GP_PrevInputHeightOfs //(1944-1920)/2
-
-	0x002A0262,
-	0x0F120001,	//REG_TC_GP_bUseReqInputInPre
-
-	0x002A0494,
-	0x0F120A00,	//REG_TC_PZOOM_PrevZoomReqInputWidth //2560
-	0x0F120780,	//REG_TC_PZOOM_PrevZoomReqInputHeight //1920
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputWidthOfs
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputHeightOfs
-
-	0x002A02A6,
-	0x0F120280,	//REG_0TC_PCFG_usWidth //640
-	0x0F1201E0,	//REG_0TC_PCFG_usHeight //480
-
-	0x002A0266,
-	0x0F120000,	//REG_TC_GP_ActivePrevConfig
-	0x002A026A,
-	0x0F120001,	//REG_TC_GP_PrevOpenAfterChange
-	0x002A024E,
-	0x0F120001,	//REG_TC_GP_NewConfigSync
-	0x002A0268,
-	0x0F120001,	//REG_TC_GP_PrevConfigChanged
-};
-
-/* 320 x 240 */
-static const u32 s5k4ecgx_QVGA_Capture[] = {
-	0xFCFCD000,
-
-	0x00287000,
-	0x002A18AC,
-	0x0F120060,	//senHal_uAddColsBin
-	0x0F120060,	//senHal_uAddColsNoBin
-	0x0F1206C8,	//senHal_uMinColsBin
-	0x0F1206C8,	//senHal_uMinColsNoBin
-	0x002A02BE,
-	0x0F120000,	//REG_0TC_PCFG_usFrTimeType
-	0x0F120001,	//REG_0TC_PCFG_FrRateQualityType
-
-	0x002A0250,
-	0x0F120A00,	//REG_TC_GP_PrevReqInputWidth //2560
-	0x0F120780,	//REG_TC_GP_PrevReqInputHeight //1920
-	0x0F120010,	//REG_TC_GP_PrevInputWidthOfs //(2592-2560)/2
-	0x0F12000C,	//REG_TC_GP_PrevInputHeightOfs //(1944-1920)/2
-
-	0x002A0262,
-	0x0F120001,	//REG_TC_GP_bUseReqInputInPre
-
-	0x002A0494,
-	0x0F120A00,	//REG_TC_PZOOM_PrevZoomReqInputWidth //2560
-	0x0F120780,	//REG_TC_PZOOM_PrevZoomReqInputHeight //1920
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputWidthOfs
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputHeightOfs
-
-	0x002A02A6,
-	0x0F120140,	//REG_0TC_PCFG_usWidth //320
-	0x0F1200F0,	//REG_0TC_PCFG_usHeight //240
-
-	0x002A0266,
-	0x0F120000,	//REG_TC_GP_ActivePrevConfig
-	0x002A026A,
-	0x0F120001,	//REG_TC_GP_PrevOpenAfterChange
-	0x002A024E,
-	0x0F120001,	//REG_TC_GP_NewConfigSync
-	0x002A0268,
-	0x0F120001,	//REG_TC_GP_PrevConfigChanged
-};
-#else
 /* Capture : 2576 x 1932 */
 static const u32 s5k4ecgx_2576_1932_Capture[] = {
 	0xFCFCD000,
@@ -8580,7 +8320,7 @@ static const u32 s5k4ecgx_QVGA_Capture[] = {
 	0x002A0270,
 	0x0F120001,
 };
-#endif
+
 ////////////////// Preview ////////////////////
 
 /* Preview : 2560 x 1920 */
@@ -9469,17 +9209,17 @@ static const u32 s5k4ecgx_352_Preview[] = {
 	0x0F1206C8,	//senHal_uMinColsNoBin
 
 	0x002A0250,
-	0x0F120A00,	//REG_TC_GP_PrevReqInputWidth //2560
-	0x0F1206F0,	//REG_TC_GP_PrevReqInputHeight //1920
-	0x0F120010,	//REG_TC_GP_PrevInputWidthOfs //(2592-2560)/2
-	0x0F120054,	//REG_TC_GP_PrevInputHeightOfs //(1944-1776)/2
+	0x0F120928,	//REG_TC_GP_PrevReqInputWidth //2344
+	0x0F120780,	//REG_TC_GP_PrevReqInputHeight //1920
+	0x0F12007C,	//REG_TC_GP_PrevInputWidthOfs //(2592-2344)/2
+	0x0F12000C,	//REG_TC_GP_PrevInputHeightOfs //(1944-1920)/2
 
 	0x002A0262,
 	0x0F120001,	//REG_TC_GP_bUseReqInputInPre
 
 	0x002A0494,
-	0x0F120A00,	//REG_TC_PZOOM_PrevZoomReqInputWidth //2560
-	0x0F1206F0,	//REG_TC_PZOOM_PrevZoomReqInputHeight //1776
+	0x0F120928,	//REG_TC_PZOOM_PrevZoomReqInputWidth //2344
+	0x0F120780,	//REG_TC_PZOOM_PrevZoomReqInputHeight //1920
 	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputWidthOfs
 	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputHeightOfs
 
@@ -9828,6 +9568,11 @@ static const u32 s5k4ecgx_Get_AE_Stable_Status[] = {
 static const u32 s5k4ecgx_Get_Light_Level[] = {
 	0x002C7000,
 	0x002E2C18,
+};
+
+static const u32 s5k4ecgx_get_frame_duration_reg[] = {
+	0x002C7000,
+	0x002E2128,
 };
 
 static const u32 s5k4ecgx_get_1st_af_search_status[] = {

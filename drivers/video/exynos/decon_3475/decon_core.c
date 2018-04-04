@@ -42,7 +42,6 @@
 #include "decon.h"
 #include "dsim.h"
 #include "decon_helper.h"
-#include "./panels/lcd_ctrl.h"
 #include "../../../staging/android/sw_sync.h"
 
 #ifdef CONFIG_OF
@@ -1363,6 +1362,7 @@ static void decon_set_protected_content(struct decon_device *decon,
 {
 	int ret = 0;
 	bool en;
+	int retry = 5;
 
 	if (enable)
 		en = decon->cur_protection_bitmask ? 1 : 0;
@@ -1372,9 +1372,21 @@ static void decon_set_protected_content(struct decon_device *decon,
 	if (en == decon->prev_protection_status)
 		return;
 
-	if(decon_reg_wait_linecnt_is_zero_timeout(DECON_INT, 0, 35 * 1000))
-		DISP_SS_EVENT_LOG(DISP_EVT_LINECNT_TIMEOUT,
-				&decon->sd, ktime_set(0, 0));
+	if (decon->pdata->psr_mode == DECON_VIDEO_MODE) {
+		do {
+			decon_reg_update_standalone(DECON_INT);
+			decon_reg_per_frame_off(0);
+			ret = decon_reg_wait_linecnt_is_zero_timeout(DECON_INT , 0, 20 * 1000);
+			if (ret)
+				decon_warn("[%s] linecnt_is_zero timeout\n", __func__);
+			else
+				break;
+		} while (retry--);
+	} else {
+		if (decon_reg_wait_linecnt_is_zero_timeout(DECON_INT, 0, 35 * 1000))
+			DISP_SS_EVENT_LOG(DISP_EVT_LINECNT_TIMEOUT,
+					&decon->sd, ktime_set(0, 0));
+	}
 
 	ret = exynos_smc(SMC_PROTECTION_SET, 0, DRM_DEV_DECON, en);
 	if (!ret)
@@ -2228,6 +2240,12 @@ err:
 	return ret;
 }
 
+static ssize_t decon_fb_read(struct fb_info *info, char __user *buf,
+		size_t count, loff_t *ppos)
+{
+	return 0;
+}
+
 static int decon_ioctl(struct fb_info *info, unsigned int cmd,
 			unsigned long arg)
 {
@@ -2370,6 +2388,7 @@ static struct fb_ops decon_fb_ops = {
 #ifdef CONFIG_ARM64
 	.fb_compat_ioctl = decon_compat_ioctl,
 #endif
+	.fb_read	= decon_fb_read,
 	.fb_pan_display	= decon_pan_display,
 	.fb_mmap	= decon_mmap,
 	.fb_release	= decon_release,
@@ -2912,6 +2931,14 @@ int decon_esd_panel_reset(struct decon_device *decon)
 		ret = panel->ops->displayon(dsim);
 		if (ret) {
 			dsim_err("%s : failed to panel display on\n", __func__);
+			goto reset_fail;
+		}
+	}
+
+	if (panel->ops->displayon_late) {
+		ret = panel->ops->displayon_late(dsim);
+		if (ret) {
+			dsim_err("%s : failed to panel display on_late\n", __func__);
 			goto reset_fail;
 		}
 	}

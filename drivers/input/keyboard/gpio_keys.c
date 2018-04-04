@@ -47,6 +47,7 @@ struct gpio_button_data {
 	struct input_dev *input;
 	struct timer_list timer;
 	struct work_struct work;
+	struct workqueue_struct *workqueue;
 	unsigned int timer_debounce;	/* in msecs */
 	unsigned int irq;
 	spinlock_t lock;
@@ -433,10 +434,12 @@ static void gpio_keys_gpio_report_event(struct gpio_button_data *bdata)
 	struct input_dev *input = bdata->input;
 	unsigned int type = button->type ?: EV_KEY;
 	int state = (gpio_get_value_cansleep(button->gpio) ? 1 : 0) ^ button->active_low;
-	struct irq_desc *desc = irq_to_desc(gpio_to_irq(button->gpio));
 
 	if ((button->code == KEY_POWER) && !!state) {
 		printk(KERN_INFO "PWR key is %s\n", state ? "pressed" : "released");
+	}
+	if ((button->code == KEY_HOMEPAGE) && !!state) {
+		printk(KERN_INFO "HOME key is pressed\n");
 	}
 
 	if (type == EV_ABS) {
@@ -444,8 +447,7 @@ static void gpio_keys_gpio_report_event(struct gpio_button_data *bdata)
 			input_event(input, type, button->code, button->value);
 	} else {
 		bdata->key_state = !!state;
-		input_event(input, type, button->code,
-				irqd_is_wakeup_set(&desc->irq_data) ? 1 : !!state);
+		input_event(input, type, button->code, !!state);
 	}
 	input_sync(input);
 }
@@ -465,7 +467,10 @@ static void gpio_keys_gpio_timer(unsigned long _data)
 {
 	struct gpio_button_data *bdata = (struct gpio_button_data *)_data;
 
-	schedule_work(&bdata->work);
+	if (bdata->workqueue)
+		queue_work(bdata->workqueue, &bdata->work);
+	else
+		schedule_work(&bdata->work);
 }
 
 static irqreturn_t gpio_keys_gpio_isr(int irq, void *dev_id)
@@ -584,6 +589,10 @@ static int gpio_keys_setup_key(struct platform_device *pdev,
 			}
 			bdata->irq = irq;
 		}
+
+		bdata->workqueue = alloc_workqueue("gpio-keys/highpri", WQ_HIGHPRI, 0);
+		if (!bdata->workqueue)
+			dev_err(dev, "failed to alloc own workqueue\n");
 
 		INIT_WORK(&bdata->work, gpio_keys_gpio_work_func);
 		setup_timer(&bdata->timer,
@@ -916,8 +925,14 @@ static int gpio_keys_probe(struct platform_device *pdev)
  fail3:
 	sysfs_remove_group(&pdev->dev.kobj, &gpio_keys_attr_group);
  fail2:
-	while (--i >= 0)
-		gpio_remove_key(&ddata->data[i]);
+	while (--i >= 0) {
+		struct gpio_button_data *bdata = &ddata->data[i];
+
+		if (bdata->workqueue)
+			destroy_workqueue(bdata->workqueue);
+
+		gpio_remove_key(bdata);
+	}
 
 	platform_set_drvdata(pdev, NULL);
  fail1:
@@ -940,8 +955,14 @@ static int gpio_keys_remove(struct platform_device *pdev)
 
 	device_init_wakeup(&pdev->dev, 0);
 
-	for (i = 0; i < ddata->pdata->nbuttons; i++)
-		gpio_remove_key(&ddata->data[i]);
+	for (i = 0; i < ddata->pdata->nbuttons; i++) {
+		struct gpio_button_data *bdata = &ddata->data[i];
+
+		if (bdata->workqueue)
+			destroy_workqueue(bdata->workqueue);
+
+		gpio_remove_key(bdata);
+	}
 
 	input_unregister_device(input);
 

@@ -1,7 +1,7 @@
 /*
  * Linux platform device for DHD WLAN adapter
  *
- * Copyright (C) 1999-2015, Broadcom Corporation
+ * Copyright (C) 1999-2016, Broadcom Corporation
  * 
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -228,7 +228,7 @@ void *wifi_platform_get_country_code(wifi_adapter_info_t *adapter, char *ccode)
 	DHD_TRACE(("%s\n", __FUNCTION__));
 	if (plat_data->get_country_code) {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 58))
-		return plat_data->get_country_code(ccode);
+		return plat_data->get_country_code(ccode, WLAN_PLAT_NODFS_FLAG);
 #else
 		return plat_data->get_country_code(ccode);
 #endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 58)) */
@@ -567,6 +567,7 @@ static int dhd_wifi_platform_load_sdio(void)
 			}
 			err = wifi_platform_set_power(adapter, TRUE, WIFI_TURNON_DELAY);
 			if (err) {
+				dhd_bus_unreg_sdio_notify();
 				/* WL_REG_ON state unknown, Power off forcely */
 				wifi_platform_set_power(adapter, FALSE, WIFI_TURNOFF_DELAY);
 				continue;

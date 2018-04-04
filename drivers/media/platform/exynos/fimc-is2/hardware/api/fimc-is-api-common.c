@@ -1097,6 +1097,14 @@ void fimc_is_res_mem_invalid(u32 kvaddr, u32 size)
 		DMA_TO_DEVICE);
 }
 
+void fimc_is_res_cache_invalid(u32 kvaddr, u32 size)
+{
+	vb2_ion_sync_for_device(gPtr_lib_support.fw_cookie,
+		kvaddr - gPtr_lib_support.kvaddr,
+		size,
+		DMA_FROM_DEVICE);
+}
+
 void fimc_is_load_clear(void)
 {
 	int i = 0;

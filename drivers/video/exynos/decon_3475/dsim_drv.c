@@ -856,6 +856,8 @@ static int dsim_enable(struct dsim_device *dsim)
 
 	dsim_reg_init(dsim->id, &dsim->lcd_info, dsim->data_lane_cnt);
 
+	dsim_reg_prepare_clocks(&dsim->clks_param);
+
 	dsim_reg_enable_clocks(dsim->id, &dsim->clks_param,
 				DSIM_LANE_CLOCK | dsim->data_lane);
 
@@ -1260,11 +1262,23 @@ int dsim_create_rw_test_sysfs(struct dsim_device *dsim)
 
 static int dsim_parse_lcd_info(struct dsim_device *dsim)
 {
-	u32 res[3];
+	u32 res[3], panel_id;
 	struct device_node *node = NULL, *first_node = NULL;
-	int octa_pin_gpio = 0;
+	int octa_pin_gpio = 0, size = 0, index = 0;
 
-	node = of_parse_phandle(dsim->dev->of_node, "lcd_info", 0);
+	of_get_property(dsim->dev->of_node, "lcd_info", &size);
+
+	/* check 2nd panel info */
+	if (size > sizeof(u32)) {
+		node = of_parse_phandle(dsim->dev->of_node, "lcd_info", 1);
+		of_property_read_u32(node, "id", &panel_id);
+		if (lcdtype == panel_id) {
+			dsim_info("%s : 2nd panel attached 0x%06x 0x%06x\n", __func__, lcdtype, panel_id);
+			index = 1;
+		}
+	}
+
+	node = of_parse_phandle(dsim->dev->of_node, "lcd_info", index);
 	dsim_info("%s is founded\n", of_node_full_name(node));
 
 	/* no panel information at all */
@@ -1365,12 +1379,12 @@ static int dsim_probe(struct platform_device *pdev)
 
 	dsim->dev = &pdev->dev;
 
+	dsim_parse_lcd_info(dsim);
 	ret = dsim_panel_ops_init(dsim);
 	if (ret) {
 		dsim_err("%s : failed to set panel ops\n", __func__);
 		goto err;
 	}
-	dsim_parse_lcd_info(dsim);
 
 	call_panel_ops(dsim, early_probe, dsim);
 

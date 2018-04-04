@@ -114,7 +114,33 @@ static void sm5703_pr_ver_info(struct i2c_client *client)
 
 static void sm5703_fg_test_read(struct i2c_client *client)
 {
-	int ret1, ret2, ret3, ret4;
+	int ret, ret1, ret2, ret3, ret4;
+
+	ret = sm5703_fg_i2c_read_word(client, 0x30);
+	dev_info(&client->dev, "%s: sm5703 FG 0x30 = 0x%x \n", __func__, ret);
+	ret = sm5703_fg_i2c_read_word(client, 0x31);
+	dev_info(&client->dev, "%s: sm5703 FG 0x31 = 0x%x \n", __func__, ret);
+	ret = sm5703_fg_i2c_read_word(client, 0x32);
+	dev_info(&client->dev, "%s: sm5703 FG 0x32 = 0x%x \n", __func__, ret);
+	ret = sm5703_fg_i2c_read_word(client, 0x33);
+	dev_info(&client->dev, "%s: sm5703 FG 0x33 = 0x%x \n", __func__, ret);
+	ret = sm5703_fg_i2c_read_word(client, 0x34);
+	dev_info(&client->dev, "%s: sm5703 FG 0x34 = 0x%x \n", __func__, ret);
+	ret = sm5703_fg_i2c_read_word(client, 0x35);
+	dev_info(&client->dev, "%s: sm5703 FG 0x35 = 0x%x \n", __func__, ret);
+	ret = sm5703_fg_i2c_read_word(client, 0x36);
+	dev_info(&client->dev, "%s: sm5703 FG 0x36 = 0x%x \n", __func__, ret);
+	ret = sm5703_fg_i2c_read_word(client, 0x37);
+	dev_info(&client->dev, "%s: sm5703 FG 0x37 = 0x%x \n", __func__, ret);
+
+	ret = sm5703_fg_i2c_read_word(client, 0x40);
+	dev_info(&client->dev, "%s: sm5703 FG 0x40 = 0x%x \n", __func__, ret);
+	ret = sm5703_fg_i2c_read_word(client, 0x41);
+	dev_info(&client->dev, "%s: sm5703 FG 0x41 = 0x%x \n", __func__, ret);
+	ret = sm5703_fg_i2c_read_word(client, 0x42);
+	dev_info(&client->dev, "%s: sm5703 FG 0x42 = 0x%x \n", __func__, ret);
+	ret = sm5703_fg_i2c_read_word(client, 0x43);
+	dev_info(&client->dev, "%s: sm5703 FG 0x43 = 0x%x \n", __func__, ret);
 
 	ret1 = sm5703_fg_i2c_read_word(client, 0xAC);
 	ret2 = sm5703_fg_i2c_read_word(client, 0xAD);
@@ -235,10 +261,12 @@ static u32 sm5703_get_soc(struct sm5703_fuelgauge_data *fuelgauge)
 
 	/* compensate soc in case of low bat_temp */
 	psy_do_property("battery", get, POWER_SUPPLY_PROP_TEMP, value);
-	curr_cal = curr_cal + (((25 - (value.intval / 10)) / 6) << 8);
+	if ((value.intval / 10) < 25) {
+		curr_cal = curr_cal + ((((25 - (value.intval / 10)) / 6) * 3) << 8);
+	}
 
-	dev_info(&fuelgauge->i2c->dev, "%s: fg_get_soc : temp_std = %d, temperature = %d, temp_offset = %d, temp_offset_cal = 0x%x, curr_cal = 0x%x\n",
-		__func__, fuelgauge->info.temp_std, fuelgauge->info.temperature, fuelgauge->info.temp_offset, fuelgauge->info.temp_offset_cal, curr_cal);
+	dev_info(&fuelgauge->i2c->dev, "%s: fg_get_soc : temp_std = %d, temperature = %d, temp_offset = %d, temp_offset_cal = 0x%x, curr_cal = 0x%x, bat_temp = %d\n",
+		__func__, fuelgauge->info.temp_std, fuelgauge->info.temperature, fuelgauge->info.temp_offset, fuelgauge->info.temp_offset_cal, curr_cal, value.intval);
 
 	sm5703_fg_i2c_write_word(fuelgauge->i2c, SM5703_REG_CURR_CAL, curr_cal);
 
@@ -412,7 +440,7 @@ static bool sm5703_fg_check_reg_init_need(struct i2c_client *client)
 static int calculate_iocv(struct i2c_client *client)
 {
 	int i;
-	int max=0, min=0, sum=0, l_avg=0, s_avg=0;
+	int max=0, min=0, sum=0, l_avg=0, s_avg=0, l_minmax_offset=0;
 	int ret=0;
 
 	for (i = SM5703_REG_IOCV_B_L_MIN; i <= SM5703_REG_IOCV_B_L_MAX; i++) {
@@ -430,6 +458,7 @@ static int calculate_iocv(struct i2c_client *client)
 		}
 	}
 	sum = sum - max - min;
+	l_minmax_offset = max - min;
 	l_avg = sum / (SM5703_REG_IOCV_B_L_MAX-SM5703_REG_IOCV_B_L_MIN-1);
 	dev_info(&client->dev,
 		"%s: iocv_l_max=0x%x, iocv_l_min=0x%x, iocv_l_sum=0x%x, iocv_l_avg=0x%x \n",
@@ -461,7 +490,7 @@ static int calculate_iocv(struct i2c_client *client)
 			__func__, max, min, sum, s_avg);
 	}
 
-	if ((l_avg - s_avg) > 0x29 || (s_avg == 0)) {
+	if (((abs(l_avg - s_avg) > 0x29) && (l_minmax_offset < 0xCC)) || (s_avg == 0)){
 		ret = l_avg;
 	} else {
 		ret = s_avg;

@@ -35,6 +35,7 @@
 #include <asm/uaccess.h>
 #include <linux/regulator/consumer.h>
 #include <linux/pinctrl/consumer.h>
+#include <linux/vmalloc.h>
 
 #include "melfas_mms400_reg.h"
 
@@ -216,6 +217,7 @@ struct mms_ts_info {
 	int touch_count;
 
 	bool tkey_enable;
+	int key_num;
 	struct device *key_dev;
 
 	u8 nap_mode;

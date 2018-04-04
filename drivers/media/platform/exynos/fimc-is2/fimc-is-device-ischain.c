@@ -582,7 +582,7 @@ static const struct vra_param init_vra_param = {
 		.cmd = OTF_INPUT_COMMAND_ENABLE,
 		.width = DEFAULT_PREVIEW_STILL_WIDTH,
 		.height = DEFAULT_PREVIEW_STILL_HEIGHT,
-		.format = OTF_INPUT_FORMAT_YUV444,
+		.format = OTF_INPUT_FORMAT_YUV422,
 		.bitwidth = OTF_INPUT_BIT_WIDTH_8BIT,
 		.order = OTF_INPUT_ORDER_BAYER_GR_BG,
 		.err = OTF_INPUT_ERROR_NO,
@@ -622,8 +622,8 @@ static const struct vra_param init_vra_param = {
 		.orientation = FD_CONFIG_ORIENTATION_DISABLE,
 		.orientation_value = 0,
 #ifdef ENABLE_FD_SW
-		.map_width = FD_MAP_WIDTH,
-		.map_height = FD_MAP_HEIGHT,
+		.map_width = FD_MAX_MAP_WIDTH,
+		.map_height = FD_MAX_MAP_HEIGHT,
 #else
 		.map_width = 0,
 		.map_height = 0,

@@ -55,14 +55,6 @@ endif
 
 comma = ,
 
-#
-# The Scalar Replacement of Aggregates (SRA) optimization pass in GCC 4.9 and
-# later may result in code being generated that handles signed short and signed
-# char struct members incorrectly. So disable it.
-# (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65932)
-#
-KBUILD_CFLAGS	+= $(call cc-option,-fno-ipa-sra)
-
 # This selects which instruction set is used.
 # Note that GCC does not numerically define an architecture version
 # macro, but instead defines a whole series of macros which makes
@@ -279,12 +271,8 @@ KBUILD_IMAGE := zImage
 endif
 
 # Build the DT binary blobs if we have OF configured
- ifeq ($(CONFIG_USE_OF),y)
+ifeq ($(CONFIG_USE_OF),y)
 KBUILD_DTBS := dtbs
- endif
-
-ifeq ($(CONFIG_EXYNOS_DTBTOOL),y)
-KBUILD_DTBS	+= dtb.img
 endif
 
 all:	$(KBUILD_IMAGE) $(KBUILD_DTBS)
@@ -306,13 +294,8 @@ zinstall uinstall install: vmlinux
 %.dtb: scripts
 	$(Q)$(MAKE) $(build)=$(boot)/dts MACHINE=$(MACHINE) $(boot)/dts/$@
 
-PHONY += dtbs dtbs_install dtb.img
-
 dtbs: scripts
 	$(Q)$(MAKE) $(build)=$(boot)/dts MACHINE=$(MACHINE) dtbs
-
-dtb.img: prepare scripts dtbs
-	$(Q)$(MAKE) $(build)=$(boot) MACHINE=$(MACHINE) $(boot)/$@
 
 zImage-dtb: vmlinux scripts dtbs
 	$(Q)$(MAKE) $(build)=$(boot) MACHINE=$(MACHINE) $(boot)/$@
@@ -333,7 +316,6 @@ define archhelp
   echo  '  uImage        - U-Boot wrapped zImage'
   echo  '  bootpImage    - Combined zImage and initial RAM disk'
   echo  '                  (supply initrd image via make variable INITRD=<path>)'
-  echo  '  dtb.img       - Build device tree image (arch/$(ARCH)/boot/dtb.img)'
   echo  '* dtbs          - Build device tree blobs for enabled boards'
   echo  '  install       - Install uncompressed kernel'
   echo  '  zinstall      - Install compressed kernel'

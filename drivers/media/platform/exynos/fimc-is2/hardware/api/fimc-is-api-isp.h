@@ -158,7 +158,7 @@ void fimc_is_lib_isp_chain_destroy(struct fimc_is_hw_ip *hw_ip,
 void fimc_is_lib_isp_object_destroy(struct fimc_is_hw_ip *hw_ip,
 	struct fimc_is_lib_isp *this,
 	u32 instance_id);
-int fimc_is_lib_isp_s_param(struct fimc_is_hw_ip *hw_ip,
+int fimc_is_lib_isp_set_param(struct fimc_is_hw_ip *hw_ip,
 	struct fimc_is_lib_isp *this,
 	void *param);
 int fimc_is_lib_isp_set_ctrl(struct fimc_is_hw_ip *hw_ip,

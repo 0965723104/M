@@ -328,11 +328,12 @@ int fimc_is_ois_gpio_on(struct fimc_is_core *core)
 		fimc_is_search_sensor_module(&core->sensor[i], sensor_id, &module);
 		if (module)
 			break;
-		else {
-			err("%s: Could not find sensor id.", __func__);
-			ret = -EINVAL;
-			goto p_err;
-		}
+	}
+
+	if (!module) {
+		err("%s: Could not find sensor id.", __func__);
+		ret = -EINVAL;
+		goto p_err;
 	}
 
 	module_pdata = module->pdata;
@@ -367,13 +368,13 @@ int fimc_is_ois_gpio_off(struct fimc_is_core *core)
 		fimc_is_search_sensor_module(&core->sensor[i], sensor_id, &module);
 		if (module)
 			break;
-		else {
-			err("%s: Could not find sensor id.", __func__);
-			ret = -EINVAL;
-			goto p_err;
-		}
 	}
 
+	if (!module) {
+		err("%s: Could not find sensor id.", __func__);
+		ret = -EINVAL;
+		goto p_err;
+	}
 	module_pdata = module->pdata;
 
 	if (!module_pdata->gpio_cfg) {

@@ -1373,15 +1373,12 @@ static int crypt_set_key(struct crypt_config *cc, char *key)
 	if (!cc->key_size && strcmp(key, "-"))
 		goto out;
 
-	/* clear the flag since following operations may invalidate previously valid key */
-	clear_bit(DM_CRYPT_KEY_VALID, &cc->flags);
-
 	if (cc->key_size && crypt_decode_key(cc->key, key, cc->key_size) < 0)
 		goto out;
 
+	set_bit(DM_CRYPT_KEY_VALID, &cc->flags);
+
 	r = crypt_setkey_allcpus(cc);
-	if (!r)
-		set_bit(DM_CRYPT_KEY_VALID, &cc->flags);
 
 out:
 	/* Hex key string not needed after here, so wipe it. */
@@ -1623,7 +1620,6 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	unsigned int key_size, opt_params;
 	unsigned long long tmpll;
 	int ret;
-	// size_t iv_size_padding; not use
 	struct dm_arg_set as;
 	const char *opt_string;
 	char dummy;

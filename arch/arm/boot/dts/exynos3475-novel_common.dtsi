@@ -945,6 +945,10 @@
 			front_preview_cam = <DVFS_CAM_L0>;
 			front_preview_mif = <DVFS_MIF_L0>;
 			front_preview_i2c = <0>;
+			front_preview_binning_int = <DVFS_INT_L2>;
+			front_preview_binning_cam = <DVFS_CAM_L0>;
+			front_preview_binning_mif = <DVFS_MIF_L0>;
+			front_preview_binning_i2c = <0>;
 			front_capture_int = <DVFS_INT_L2>;
 			front_capture_cam = <DVFS_CAM_L0>;
 			front_capture_mif = <DVFS_MIF_L0>;
@@ -985,6 +989,10 @@
 			rear_preview_uhd_cam = <DVFS_CAM_L0>;
 			rear_preview_uhd_mif = <DVFS_MIF_L0>;
 			rear_preview_uhd_i2c = <0>;
+			rear_preview_binning_int = <DVFS_INT_L2>;
+			rear_preview_binning_cam = <DVFS_CAM_L0>;
+			rear_preview_binning_mif = <DVFS_MIF_L0>;
+			rear_preview_binning_i2c = <0>;
 			rear_capture_int = <DVFS_INT_L0>;
 			rear_capture_cam = <DVFS_CAM_L0>;
 			rear_capture_mif = <DVFS_MIF_L0>;
@@ -1218,7 +1226,12 @@
 					   50 897000 0 559000 100000 0 1
 					  100 1196000 0 666000 100000 0 1>;
 		};
-
+		boot_device@2 {
+			net_boost,label="USB";
+			net_boost,node="rndis0";
+			net_boost,table_size = <1>;
+			net_boost,table= < 1 0 0 0 0 0 1 >;
+		};
 		/* Example
 		   boot_device@2 {
 		   net_boost,label="EMMC";

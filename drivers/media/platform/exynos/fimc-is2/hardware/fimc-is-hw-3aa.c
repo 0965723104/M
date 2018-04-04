@@ -475,6 +475,11 @@ int fimc_is_hw_3aa_set_param(struct fimc_is_hw_ip *hw_ip,
 		region, param_set,
 		lindex, hindex, instance);
 
+	param_set->instance_id = instance;
+	ret = fimc_is_lib_isp_set_param(hw_ip, &hw_3aa->lib[instance], param_set);
+	if (ret)
+		err_hw("[%d] set_param fail", instance);
+
 exit:
 	return ret;
 }

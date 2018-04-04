@@ -264,16 +264,16 @@ u32 cal_get_boost_volt(u32 id, s32 level)
 	switch(id)
 	{
 		case SYSC_DVFS_CL0:
-			boost = (level <= 5) ? get_asv_cpu_boost0() :
-				(level <= 8) ? get_asv_cpu_boost1() : 0;
+			boost = (level <= 4) ? get_asv_cpu_boost0() :
+				(level <= 7) ? get_asv_cpu_boost1() : 0;
 			break;
 		case SYSC_DVFS_G3D:
 			boost = (level<=0) ? get_asv_g3d_boost0() :
 				(level<=1) ? get_asv_g3d_boost1() : 0;
 			break;
 		case SYSC_DVFS_MIF:
-			boost = (level<=2) ? get_asv_mif_boost0() :
-				(level<=3) ? get_asv_mif_boost1() : 0;
+			boost = (level<=0) ? get_asv_mif_boost0() :
+				(level<=1) ? get_asv_mif_boost1() : 0;
 			break;
 		case SYSC_DVFS_INT:
 			boost = (level<=0) ? get_asv_int_boost0() :

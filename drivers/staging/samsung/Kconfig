@@ -103,3 +103,10 @@ config USER_RESET_DEBUG
 	  This option enables debugging log for User Reset.
 	  This option provides reset history log in user version.
 	  This option enable proc/reset_reason support
+
+config SEC_INITCALL_DEBUG
+	bool "Enable Samsung initcall debug support"
+	default y
+	depends on SEC_DEBUG
+	help
+	  Enable Samsung initcall debug support.

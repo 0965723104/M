@@ -55,6 +55,7 @@
 #include "fimc-is-device-from.h"
 
 #include "fimc-is-binary.h"
+#include "fimc-is-dt.h"
 
 #define FW_CORE_VER		0
 #define FW_PIXEL_SIZE		1
@@ -376,4 +377,6 @@ int fimc_is_sec_gpio_enable(struct exynos_platform_fimc_is *pdata, char *name, b
 int fimc_is_sec_core_voltage_select(struct device *dev, char *header_ver);
 int fimc_is_sec_ldo_enable(struct device *dev, char *name, bool on);
 int fimc_is_sec_ldo_enabled(struct device *dev, char *name);
+int fimc_is_sec_rom_power_on(struct fimc_is_core *core, int position);
+int fimc_is_sec_rom_power_off(struct fimc_is_core *core, int position);
 #endif /* FIMC_IS_SEC_DEFINE_H */

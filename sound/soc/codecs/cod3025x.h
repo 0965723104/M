@@ -95,6 +95,11 @@ struct cod3025x_priv {
 	unsigned int use_btn_adc_mode;
 	struct delayed_work jack_det_work;
 	struct workqueue_struct *jack_det_wq;
+	bool mic_bias2_highquality;
+	bool use_ldet_threshold;
+#ifdef CONFIG_SND_RF_REF_RCV_STATE
+	int rcv_state_gpio;
+#endif
 };
 
 /*

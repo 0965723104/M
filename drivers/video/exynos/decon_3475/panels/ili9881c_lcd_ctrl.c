@@ -73,7 +73,8 @@ static int dsim_panel_set_brightness(struct dsim_device *dsim, int force)
 	if (bl == 3)
 		bl_reg[2] = bl_reg[2] * 5 / 6;
 
-	dsim_info("%s: platform BL : %d panel BL reg : [%3d] %02x%02x\n", __func__, panel->bd->props.brightness, bl, bl_reg[1], bl_reg[2]);
+	dsim_info("%s: platform BL : %d panel BL reg : [%3d] %02x%02x\n",
+		__func__, panel->bd->props.brightness, bl, bl_reg[1], bl_reg[2]);
 
 	if (dsim_write_hl_data(dsim, bl_reg, ARRAY_SIZE(bl_reg)) < 0)
 		dsim_err("%s : fail to write brightness cmd.\n", __func__);
@@ -350,6 +351,98 @@ static ssize_t dump_register_store(struct device *dev,
 	return size;
 }
 
+#ifdef CONFIG_DECON_MIPI_DSI_CLK_SWITCH
+static int fb_notifier_callback(struct notifier_block *self,
+				 unsigned long event, void *data)
+{
+	struct fb_event *evdata = data;
+	struct dsim_device *dsim = NULL;
+	struct panel_private *priv = NULL;
+	int fb_blank;
+
+	switch (event) {
+	case FB_EARLY_EVENT_BLANK:
+		break;
+	default:
+		return 0;
+	}
+
+	dsim = container_of(self, struct dsim_device, fb_notif_panel);
+	priv = &dsim->priv;
+
+	fb_blank = *(int *)evdata->data;
+
+	if (evdata->info->node != 0)
+		return 0;
+
+	if (fb_blank == FB_BLANK_UNBLANK) {
+		mutex_lock(&priv->lock);
+		dsim->clks_param.clks.hs_clk = dsim->hs_clk_list[dsim->hs_clk_mode];
+		dsim->clks_param.clks.esc_clk = dsim->lcd_info.esc_clk;
+		dsim_info("%s: %d, %d\n", __func__, fb_blank, dsim->hs_clk_mode);
+		mutex_unlock(&priv->lock);
+	}
+
+	return 0;
+}
+
+static ssize_t mipi_switch_show(struct device *dev,
+	struct device_attribute *attr, char *buf)
+{
+	struct dsim_device *dsim;
+	struct panel_private *priv = dev_get_drvdata(dev);
+	dsim = container_of(priv, struct dsim_device, priv);
+
+	sprintf(buf, "%d\n", dsim->hs_clk_mode);
+
+	return strlen(buf);
+}
+
+static ssize_t mipi_switch_store(struct device *dev,
+	struct device_attribute *attr, const char *buf, size_t size)
+{
+	struct dsim_device *dsim;
+	struct panel_private *priv = dev_get_drvdata(dev);
+	int mode_index, sim_index;
+	int ret;
+
+	dsim = container_of(priv, struct dsim_device, priv);
+
+	ret = sscanf(buf, "%d %d", &mode_index, &sim_index);
+
+	if (ret < 0)
+		return ret;
+	else {
+		if ((mode_index < 0 || mode_index >= dsim->hs_clk_size)
+			|| (sim_index < 0 || sim_index >= 2)) {
+			dsim_info("%s : out of range input[%d, %d] range[0 ~ %d, 0 ~ 1]\n",
+				__func__, mode_index, sim_index, dsim->hs_clk_size - 1);
+			return -EINVAL;
+		}
+
+		mutex_lock(&priv->lock);
+
+		dsim->hs_clk_mode = mode_index;
+
+		if ((sim_index) && (dsim->state != DSIM_STATE_SUSPEND)) {
+			dsim->clks_param.clks.hs_clk = dsim->hs_clk_list[dsim->hs_clk_mode];
+			dsim->clks_param.clks.esc_clk = dsim->lcd_info.esc_clk;
+
+			dsim_reg_set_clocks(dsim->id, &dsim->clks_param.clks, DSIM_LANE_CLOCK | dsim->data_lane, 1);
+
+			dsim_info("%s : hs clk is set to %d [index : %d]\n", __func__,
+				dsim->hs_clk_list[dsim->hs_clk_mode], dsim->hs_clk_mode);
+		} else {
+			dsim_info("%s : hs clk will be set to %d [index : %d]\n", __func__,
+				dsim->hs_clk_list[dsim->hs_clk_mode], dsim->hs_clk_mode);
+		}
+
+		mutex_unlock(&priv->lock);
+	}
+	return size;
+}
+#endif
+
 static DEVICE_ATTR(lcd_type, 0444, lcd_type_show, NULL);
 static DEVICE_ATTR(window_type, 0444, window_type_show, NULL);
 static DEVICE_ATTR(brightness_table, 0444, brightness_table_show, NULL);
@@ -357,7 +450,9 @@ static DEVICE_ATTR(auto_brightness, 0644, auto_brightness_show, auto_brightness_
 static DEVICE_ATTR(siop_enable, 0664, siop_enable_show, siop_enable_store);
 static DEVICE_ATTR(power_reduce, 0664, power_reduce_show, power_reduce_store);
 static DEVICE_ATTR(dump_register, 0664, dump_register_show, dump_register_store);
-
+#ifdef CONFIG_DECON_MIPI_DSI_CLK_SWITCH
+static DEVICE_ATTR(mipi_switch, 0664, mipi_switch_show, mipi_switch_store);
+#endif
 static void lcd_init_sysfs(struct dsim_device *dsim)
 {
 	int ret = -1;
@@ -444,7 +539,19 @@ static int ili9881c_displayon(struct dsim_device *dsim)
 
 	dsim_info("MDD : %s was called\n", __func__);
 
-/* displayon_err: */
+	ret = dsim_write_hl_data(dsim, SEQ_DISPLAY_ON, ARRAY_SIZE(SEQ_DISPLAY_ON));
+	if (ret < 0) {
+		dsim_err("%s : fail to write CMD : SEQ_DISPLAY_ON\n", __func__);
+		goto displayon_err;
+	}
+
+	ret = dsim_write_hl_data(dsim, SEQ_BR_OPEN, ARRAY_SIZE(SEQ_BR_OPEN));
+	if (ret < 0) {
+		dsim_err("%s : fail to write CMD : SEQ_BR_OPEN\n", __func__);
+		goto displayon_err;
+	}
+
+displayon_err:
 	return ret;
 
 }
@@ -526,8 +633,6 @@ static int ili9881c_init(struct dsim_device *dsim)
 		goto init_exit;
 	}
 
-
-
 	ret = dsim_write_hl_data(dsim, SEQ_PAGE_0, ARRAY_SIZE(SEQ_PAGE_0));
 	if (ret < 0) {
 		dsim_err("%s : fail to write CMD : SEQ_PAGE_0\n", __func__);
@@ -553,24 +658,6 @@ static int ili9881c_init(struct dsim_device *dsim)
 	}
 
 	msleep(130);
-
-	ret = dsim_write_hl_data(dsim, SEQ_DISPLAY_ON, ARRAY_SIZE(SEQ_DISPLAY_ON));
-	if (ret < 0) {
-		dsim_err("%s : fail to write CMD : SEQ_DISPLAY_ON\n", __func__);
-		goto init_exit;
-	}
-
-	ret = dsim_write_hl_data(dsim, SEQ_BR_OPEN, ARRAY_SIZE(SEQ_BR_OPEN));
-	if (ret < 0) {
-		dsim_err("%s : fail to write CMD : SEQ_BR_OPEN\n", __func__);
-		goto init_exit;
-	}
-
-	ret = dsim_write_hl_data(dsim, SEQ_BR_MAX, ARRAY_SIZE(SEQ_BR_MAX));
-	if (ret < 0) {
-		dsim_err("%s : fail to write CMD : SEQ_BR_MAX\n", __func__);
-		goto init_exit;
-	}
 
 init_exit:
 	return ret;
@@ -631,6 +718,12 @@ static int dsim_panel_probe(struct dsim_device *dsim)
 {
 	int ret = 0;
 	struct panel_private *panel = &dsim->priv;
+#ifdef CONFIG_DECON_MIPI_DSI_CLK_SWITCH
+	struct device_node *node = NULL;
+	int i = 0;
+	int clk_cnt_property = 0;
+	struct property *prop;
+#endif
 
 	dsim->lcd = lcd_device_register("panel", dsim->dev, &dsim->priv, NULL);
 	if (IS_ERR(dsim->lcd)) {
@@ -665,6 +758,32 @@ static int dsim_panel_probe(struct dsim_device *dsim)
 
 #if defined(CONFIG_EXYNOS_DECON_LCD_SYSFS)
 	lcd_init_sysfs(dsim);
+#endif
+#ifdef CONFIG_DECON_MIPI_DSI_CLK_SWITCH
+	node = of_parse_phandle(dsim->dev->of_node, "lcd_info", 0);
+	/* node = of_find_node_by_path("node name"); */
+	prop = of_find_property(node, "timing,dsi-hs-clk", &clk_cnt_property);
+	if (!prop)
+		goto probe_err;
+
+	dsim->hs_clk_size = clk_cnt_property / sizeof(u32);
+	dsim->hs_clk_size = (dsim->hs_clk_size > ARRAY_SIZE(dsim->hs_clk_list)) ? ARRAY_SIZE(dsim->hs_clk_list) : dsim->hs_clk_size;
+
+	if (dsim->hs_clk_size <= 1)
+		goto probe_err;
+
+	of_property_read_u32_array(node, "timing,dsi-hs-clk", dsim->hs_clk_list, dsim->hs_clk_size);
+
+	for (i = 0; i < dsim->hs_clk_size; i++)
+		dsim_info("	dsim HS-clk [%2d] : %d\n", i, dsim->hs_clk_list[i]);
+
+	dsim->fb_notif_panel.notifier_call = fb_notifier_callback;
+	fb_register_client(&dsim->fb_notif_panel);
+
+	ret = device_create_file(&dsim->lcd->dev, &dev_attr_mipi_switch);
+	if (ret < 0)
+		dev_err(&dsim->lcd->dev, "failed to add sysfs entries, %d\n", __LINE__);
+
 #endif
 
 probe_err:

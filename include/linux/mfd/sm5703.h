@@ -90,17 +90,19 @@ struct sm5703_regulator_data {
 struct sm5703_fled_platform_data;
 
 typedef struct sm5703_charger_platform_data {
-    sec_charging_current_t *charging_current_table;
-    int chg_float_voltage;
-    int chg_autostop;
-    int chg_autoset;
-    int chg_aiclen;
-    int chg_aiclth;
-    int fg_vol_val;
-    int fg_soc_val;
-    int fg_curr_avr_val;
-    char *charger_name;
-    int chgen_gpio; //nCHGEN Pin
+	sec_charging_current_t *charging_current_table;
+	int chg_float_voltage;
+	int chg_autostop;
+	int chg_autoset;
+	int chg_aiclen;
+	int chg_aiclth;
+	int chg_vbuslimit;
+	int fg_vol_val;
+	int fg_soc_val;
+	int fg_curr_avr_val;
+	char *charger_name;
+	int chgen_gpio; //nCHGEN Pin
+	sec_battery_full_charged_t full_check_type_2nd;
 } sm5703_charger_platform_data_t;
 
 struct sm5703_mfd_platform_data {

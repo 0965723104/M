@@ -116,19 +116,22 @@ static int sx9500_i2c_write(struct sx9500_p *data, u8 reg_addr, u8 buf)
 	int ret;
 	struct i2c_msg msg;
 	unsigned char w_buf[2];
+	int retry=3;
 
-	w_buf[0] = reg_addr;
-	w_buf[1] = buf;
+	while(retry--) {
+		w_buf[0] = reg_addr;
+		w_buf[1] = buf;
 
-	msg.addr = data->client->addr;
-	msg.flags = I2C_M_WR;
-	msg.len = 2;
-	msg.buf = (char *)w_buf;
+		msg.addr = data->client->addr;
+		msg.flags = I2C_M_WR;
+		msg.len = 2;
+		msg.buf = (char *)w_buf;
 
-	ret = i2c_transfer(data->client->adapter, &msg, 1);
-	if (ret < 0)
-		pr_err("[SX9500]: %s - i2c write error %d\n", __func__, ret);
-
+		ret = i2c_transfer(data->client->adapter, &msg, 1);
+		if (ret >= 0)
+			return ret;
+	}
+	pr_err("[SX9500]: %s - i2c write error %d\n", __func__, ret);
 	return ret;
 }
 
@@ -437,27 +440,13 @@ static ssize_t sx9500_read_data_show(struct device *dev,
 static ssize_t sx9500_sw_reset_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
-	int ret = 0;
 	struct sx9500_p *data = dev_get_drvdata(dev);
-#if 0
-	if (atomic_read(&data->enable) == ON)
-		sx9500_set_enable(data, OFF);
 
-	sx9500_set_mode(data, SX9500_MODE_SLEEP);
-	ret = sx9500_i2c_write(data, SX9500_SOFTRESET_REG, SX9500_SOFTRESET);
-	msleep(300);
-
-	sx9500_initialize_chip(data);
-	sx9500_set_mode(data, SX9500_MODE_NORMAL);
-
-	if (atomic_read(&data->enable) == ON)
-		sx9500_set_enable(data, ON);
-#endif
 	pr_info("[SX9500]: %s\n", __func__);
 	sx9500_set_offset_calibration(data);
 	msleep(400);
 	sx9500_get_data(data);
-	return snprintf(buf, PAGE_SIZE, "%d\n", ret);
+	return snprintf(buf, PAGE_SIZE, "%d\n", 0);
 }
 
 static ssize_t sx9500_freq_store(struct device *dev,

@@ -96,8 +96,6 @@ typedef enum {
 	THROTTLING2,
 	THROTTLING3,
 	THROTTLING4,
-	THROTTLING5,
-	THROTTLING6,
 	TRIPPING,
 	TMU_LOCK_CLK_END,
 } tmu_lock_clk;
@@ -106,7 +104,6 @@ typedef enum {
 	GPU_MAX_CLOCK = 0,
 	GPU_MAX_CLOCK_LIMIT,
 	GPU_MIN_CLOCK,
-	GPU_MIN_CLOCK_LIMIT,
 	GPU_DVFS_START_CLOCK,
 	GPU_DVFS_BL_CONFIG_CLOCK,
 	GPU_GOVERNOR_TYPE,
@@ -133,8 +130,6 @@ typedef enum {
 	GPU_TEMP_THROTTLING2,
 	GPU_TEMP_THROTTLING3,
 	GPU_TEMP_THROTTLING4,
-	GPU_TEMP_THROTTLING5,
-	GPU_TEMP_THROTTLING6,
 	GPU_TEMP_TRIPPING,
 	GPU_BOOST_MIN_LOCK,
 	GPU_BOOST_EGL_MIN_LOCK,
@@ -267,7 +262,6 @@ struct exynos_context {
 	int gpu_max_clock;
 	int gpu_max_clock_limit;
 	int gpu_min_clock;
-	int gpu_min_clock_limit;
 	int gpu_dvfs_start_clock;
 	int gpu_dvfs_config_clock;
 
