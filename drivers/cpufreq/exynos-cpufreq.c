@@ -50,6 +50,7 @@ static struct lpj_info global_lpj_ref;
 
 /* Use boot_freq when entering sleep mode */
 static unsigned int freq_max;
+static unsigned int freq_max_limit;
 static unsigned int freq_min;
 static unsigned int max_thermal_freq;
 static unsigned int curr_target_freq;
@@ -998,6 +999,7 @@ static int __init exynos_cpufreq_init(void)
 	regulator_max_support_volt = regulator_get_max_support_voltage(arm_regulator);
 
 	freq_max = exynos_info->freq_table[exynos_info->max_support_idx].frequency;
+	freq_max_limit = exynos_info->freq_table[exynos_info->max_limit_support_idx].frequency;
 	freq_min = exynos_info->freq_table[exynos_info->min_support_idx].frequency;
 	max_thermal_freq = freq_max;
 

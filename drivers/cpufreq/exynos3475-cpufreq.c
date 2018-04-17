@@ -30,6 +30,7 @@
 
 static int pll_safe_idx;
 static int max_support_idx;
+static int max_limit_support_idx;
 static int min_support_idx = (CPUFREQ_LEVEL_END - 1);
 
 static struct clk *cpu_pll;
@@ -44,8 +45,8 @@ static unsigned int exynos3475_volt_table[CPUFREQ_LEVEL_END] = {
 };
 
 static struct cpufreq_frequency_table exynos3475_freq_table[] = {
-	{L0,  1703 * 1000}, //freeze
-	{L1,  1560 * 1000},
+	{L0,  1690 * 1000}, //freeze
+	{L1,  1599 * 1000},
 	{L2,  1495 * 1000},
 	{L3,  1404 * 1000},
 	{L4,  1300 * 1000},
@@ -79,9 +80,9 @@ static unsigned int exynos3475_clkdiv_table[9][CPUFREQ_LEVEL_END] = {
 static unsigned int exynos3475_apll_pms_table[CPUFREQ_LEVEL_END] = {
 	/* MDIV | PDIV | SDIV */
 	/* APLL FOUT : 1700MHz */
-	PLL2555X_PMS(262, 4, 0),
+	PLL2555X_PMS(520, 4, 1),
 	/* APLL FOUT : 1600MHz */
-	PLL2555X_PMS(240, 4, 0),
+	PLL2555X_PMS(246, 4, 0),
 	/* APLL FOUT : 1500MHz */
 	PLL2555X_PMS(230, 4, 0),
 	/* APLL FOUT : 1400MHz */
@@ -248,11 +249,13 @@ static void __init set_volt_table(void)
 		pr_info("CPUFREQ: L%d : %d uV\n", i,
 				exynos3475_volt_table[i]);
 	}
-
-	max_support_idx = L1;	/* 1.6GHz */
+	max_limit_support_idx = L0; /* 1.7GHz */
+	max_support_idx = L0;	/* 1.6GHz */
 	min_support_idx = L14;	/* 400mhz */
 	pr_info("CPUFREQ : max_freq : L%d %u khz\n", max_support_idx,
 		exynos3475_freq_table[max_support_idx].frequency);
+	pr_info("CPUFREQ : max_freq : L%d %u khz\n", max_limit_support_idx,
+		exynos3475_freq_table[max_limit_support_idx].frequency);
 	pr_info("CPUFREQ : min_freq : L%d %u khz\n", min_support_idx,
 		exynos3475_freq_table[min_support_idx].frequency);
 }

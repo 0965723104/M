@@ -154,7 +154,7 @@
 	hsi2c@104C0000 {
 		status = "okay";
 		samsung,hs-mode;
-		clock-frequency = <1800000>;
+		clock-frequency = <1500000>;
 		samsung,hsi2c-batcher;
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -892,8 +892,8 @@
 		rear_sensor_id = <13>;
 		front_sensor_id = <7>;
 
-		#define DVFS_INT_L0 400000
-		#define DVFS_INT_L1 334000
+		#define DVFS_INT_L0 334000
+		#define DVFS_INT_L1 333000
 		#define DVFS_INT_L2 276000
 		#define DVFS_INT_L3 207000
 		#define DVFS_INT_L4 138000
@@ -901,12 +901,12 @@
 
 		#define DVFS_CAM_L0 0
 
-		#define DVFS_MIF_L0 1000000
-		#define DVFS_MIF_L1 825000
-		#define DVFS_MIF_L2 728000
-		#define DVFS_MIF_L3 666000
-		#define DVFS_MIF_L4 559000
-		#define DVFS_MIF_L5 413000
+		#define DVFS_MIF_L0 666000
+		#define DVFS_MIF_L1 559000
+		#define DVFS_MIF_L2 413000
+		#define DVFS_MIF_L3 338000
+		#define DVFS_MIF_L4 273000
+		#define DVFS_MIF_L5 200000
 
 		fimc_is_dvfs {
 			default_int = <DVFS_INT_L0>;

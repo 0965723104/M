@@ -4,7 +4,7 @@ DTS=arch/arm/boot/dts
 export CROSS_COMPILE=/home/minhka98/arm-eabi-4.8/bin/arm-eabi-
 ### MANUAL DT.IMG GENERATION ###
 echo -n "Build dt.img...."
-make exynos3475-j2lte_eur_open_00.dtb exynos3475-j2lte_eur_open_01.dtb exynos3475-j2lte_eur_open_02.dtb exynos3475-j2lte_eur_open_03.dtb
+make exynos3475-j2lte_sea_xsa_00.dtb exynos3475-j2lte_sea_xsa_01.dtb exynos3475-j2lte_sea_xsa_02.dtb exynos3475-j2lte_sea_xsa_03.dtb 
 ./tools/dtbtool -o ./boot.img-dtb -v -s 2048 -p ./scripts/dtc/ $DTS/
 # get rid of the temps in dts directory
 rm -rf $DTS/.*.tmp
@@ -16,3 +16,4 @@ du -k "./boot.img-dtb" | cut -f1 >sizT
 sizT=$(head -n 1 sizT)
 rm -rf sizT
 echo "$sizT Kb"
+
