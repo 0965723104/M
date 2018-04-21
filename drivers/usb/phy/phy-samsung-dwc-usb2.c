@@ -343,8 +343,6 @@ static int samsung_dwc_usb2phy_init(struct usb_phy *phy)
 	/* Initialize usb phy registers */
 	samsung_dwc_usb2phy_enable(sphy);
 
-	samsung_dwc_usb2phy_tune(phy);
-
 	if (host) {
 		/* setting default phy-type for USB 2.0 */
 		if (!strstr(dev_name(host->controller), "ehci") ||
@@ -353,6 +351,8 @@ static int samsung_dwc_usb2phy_init(struct usb_phy *phy)
 	} else {
 		samsung_usbphy_set_type(&sphy->phy, USB_PHY_TYPE_DEVICE);
 	}
+
+	samsung_dwc_usb2phy_tune(phy);
 
 	/* reset usb phy */
 	samsung_dwc_usb2phy_reset(sphy);

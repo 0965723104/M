@@ -31,6 +31,9 @@
 #include <linux/cpuidle.h>
 #include <linux/timer.h>
 #include <linux/exynos-ss.h>
+#if defined(CONFIG_SEC_INITCALL_DEBUG)
+#include <linux/sec_debug.h>
+#endif
 
 #include "../base.h"
 #include "power.h"
@@ -176,6 +179,10 @@ static ktime_t initcall_debug_start(struct device *dev)
 			dev->parent ? dev_name(dev->parent) : "none");
 		calltime = ktime_get();
 	}
+#if defined(CONFIG_SEC_INITCALL_DEBUG)
+	if (initcall_debug)
+		calltime = ktime_get();
+#endif
 
 	return calltime;
 }
@@ -191,6 +198,21 @@ static void initcall_debug_report(struct device *dev, ktime_t calltime,
 		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
 			error, (unsigned long long)ktime_to_ns(delta) >> 10);
 	}
+
+#if defined(CONFIG_SEC_INITCALL_DEBUG)
+	if (initcall_debug) {
+		unsigned long long duration;
+
+		rettime = ktime_get();
+		delta = ktime_sub(rettime, calltime);
+		duration = (unsigned long long)ktime_to_ns(delta) >> 10;
+		if (SEC_INITCALL_SLEEP_DEBUG_MIN_TIME < duration)
+			sec_initcall_debug_sleep_add(
+				dev_name(dev),
+				NULL, duration);
+	}
+#endif
+
 }
 
 /**
@@ -371,6 +393,13 @@ static void dpm_show_time(ktime_t starttime, pm_message_t state, char *info)
 	pr_info("PM: %s%s%s of devices complete after %ld.%03ld msecs\n",
 		info ?: "", info ? " " : "", pm_verb(state.event),
 		usecs / USEC_PER_MSEC, usecs % USEC_PER_MSEC);
+
+#if defined(CONFIG_SEC_INITCALL_DEBUG)
+	if (initcall_debug)
+		sec_initcall_debug_sleep_add(
+			pm_verb(state.event),
+			info ?: "end", usecs);
+#endif
 }
 
 static int dpm_run_callback(pm_callback_t cb, struct device *dev,

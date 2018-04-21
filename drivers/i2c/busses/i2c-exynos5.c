@@ -189,6 +189,13 @@ static LIST_HEAD(drvdata_list);
 /* Batcher STATE register bits */
 #define UNEXPECTED_HSI2C_INTR			(1u << 1)
 #define BATCHER_OPERATION_COMPLETE		(1u << 0)
+#define BATCHER_IDLE_STATE			(1u << 3)
+#define BATCHER_INIT_STATE			(1u << 4)
+#define BATCHER_GET_SEMAPHORE_STATE		(1u << 5)
+#define BATCHER_CONFIG_STATE			(1u << 6)
+#define BATCHER_CLEAN_INTR_STATE		(1u << 13)
+#define BATCHER_REL_SEMAPHORE_STATE		(1u << 14)
+#define BATCHER_GEN_INT_STATE			(1u << 15)
 
 /* Batcher INT_EN */
 #define HSI2C_BATCHER_INT_ENABLE		(1u << 0)
@@ -269,6 +276,7 @@ struct exynos5_i2c {
 	unsigned int		desc_pointer;
 	unsigned int		batcher_read_addr;
 	int			idle_ip_index;
+	int			reset_before_trans;
 };
 
 static const struct of_device_id exynos5_i2c_match[] = {
@@ -728,8 +736,17 @@ static void set_batcher_idle(struct exynos5_i2c *i2c)
 static void reset_batcher(struct exynos5_i2c *i2c)
 {
 	u32 i2c_batcher_con = 0x00;
+
+	recover_gpio_pins(i2c);
+
 	i2c_batcher_con |= HSI2C_BATCHER_RESET;
 	writel(i2c_batcher_con, i2c->regs + HSI2C_BATCHER_CON);
+
+	i2c_batcher_con &= ~HSI2C_BATCHER_RESET;
+	writel(i2c_batcher_con, i2c->regs + HSI2C_BATCHER_CON);
+
+	if (readl(i2c->regs + HSI2C_BATCHER_STATE) & BATCHER_OPERATION_COMPLETE)
+		writel(BATCHER_OPERATION_COMPLETE, i2c->regs + HSI2C_BATCHER_STATE);
 
 	exynos5_i2c_reset(i2c);
 	set_batcher_idle(i2c);
@@ -738,6 +755,33 @@ static void reset_batcher(struct exynos5_i2c *i2c)
 static void release_ap_semaphore(struct exynos5_i2c *i2c)
 {
 	writel(0x01, i2c->regs + HSI2C_SMRelease);
+}
+
+static void recover_batcher(struct exynos5_i2c *i2c, u32 batcher_state)
+{
+	if (batcher_state == BATCHER_IDLE_STATE) {
+		dev_warn(i2c->dev, "Batcher State is IDLE\n");
+	} else if (batcher_state == BATCHER_INIT_STATE) {
+		dev_warn(i2c->dev, "Batcher State is INIT\n");
+	} else if (batcher_state == BATCHER_GET_SEMAPHORE_STATE) {
+		dev_warn(i2c->dev, "Batcher State is GET_SEMA\n");
+	} else if (batcher_state == BATCHER_REL_SEMAPHORE_STATE) {
+		dev_warn(i2c->dev, "Batcher State is REL_SEMA\n");
+	} else if (batcher_state == BATCHER_GEN_INT_STATE) {
+		dev_warn(i2c->dev, "Batcher State is GET_INT\n");
+	} else if ((batcher_state >= BATCHER_CONFIG_STATE) &&
+			(batcher_state <= BATCHER_CLEAN_INTR_STATE)) {
+		dev_warn(i2c->dev, "Batcher recovery is started\n");
+		reset_batcher(i2c);
+		release_ap_semaphore(i2c);
+		dev_warn(i2c->dev, "Batcher recovery was done\n");
+		return;
+	} else {
+		/* BATCHER_UNEXPECTED_INT */
+		dev_warn(i2c->dev, "Batcher State is UNEXPECTED_INT\n");
+	}
+
+	dev_warn(i2c->dev, "Batcher can't be recovered\n");
 }
 
 static void finalize_batcher(struct exynos5_i2c *i2c)
@@ -1159,6 +1203,8 @@ static int exynos5_i2c_xfer_batcher(struct exynos5_i2c *i2c,
 
 	unsigned int i2c_conf = 0x00;
 	unsigned int i2c_read_length;
+	unsigned int i2c_batcher_state;
+	unsigned char i = 0;
 
 	i2c->msg = msgs;
 	i2c->msg_ptr = 0;
@@ -1327,20 +1373,35 @@ static int exynos5_i2c_xfer_batcher(struct exynos5_i2c *i2c,
 		}
 
 		if (timeout == 0) {
-			/* Read Error handlilng for HSI2C_Batcher */
-			dev_warn(i2c->dev, "rx timeout Batcher status= %x\n",
-			readl(i2c->regs + HSI2C_BATCHER_STATE));
+			i2c_batcher_state = readl(i2c->regs + HSI2C_BATCHER_STATE);
 
-			dev_warn(i2c->dev, "Batcher FIFO Status= %x\n",
-			readl(i2c->regs + HSI2C_BATCHER_FIFO_STATUS));
-			dev_warn(i2c->dev, "Batcher INT Status= %x\n",
-			readl(i2c->regs + HSI2C_BATCHER_INT_STATUS));
-			recover_gpio_pins(i2c);
+			if (i2c_batcher_state & BATCHER_OPERATION_COMPLETE) {
+				do {
+					byte = (unsigned char)readl(i2c->regs +
+						i2c->batcher_read_addr + (i++ * 4));
+					i2c->msg->buf[i2c->msg_ptr++] = byte;
+				} while (i2c->msg_ptr < i2c->msg->len);
 
-			reset_batcher(i2c);
-			release_ap_semaphore(i2c);
+				i2c_batcher_state |= BATCHER_OPERATION_COMPLETE;
+				writel(i2c_batcher_state, i2c->regs + HSI2C_BATCHER_STATE);
 
-			return ret;
+				/* Initialize Batcher */
+				set_batcher_idle(i2c);
+			} else {
+				/* Read Error handlilng for HSI2C_Batcher */
+				dev_warn(i2c->dev, "rx timeout Batcher status= %x\n",
+				readl(i2c->regs + HSI2C_BATCHER_STATE));
+
+				dev_warn(i2c->dev, "Batcher FIFO Status= %x\n",
+				readl(i2c->regs + HSI2C_BATCHER_FIFO_STATUS));
+				dev_warn(i2c->dev, "Batcher INT Status= %x\n",
+				readl(i2c->regs + HSI2C_BATCHER_INT_STATUS));
+
+				/* Batcher recovery */
+				recover_batcher(i2c, i2c_batcher_state);
+
+				return ret;
+			}
 		}
 		ret = 0;
 	} else {
@@ -1364,20 +1425,29 @@ static int exynos5_i2c_xfer_batcher(struct exynos5_i2c *i2c,
 		}
 
 		if (timeout == 0) {
-			/* Write Error handlilng for HSI2C_Batcher */
-			dev_warn(i2c->dev, "tx timeout Batcher status= %x\n",
-			readl(i2c->regs + HSI2C_BATCHER_STATE));
+			i2c_batcher_state = readl(i2c->regs + HSI2C_BATCHER_STATE);
 
-			dev_warn(i2c->dev, "Batcher FIFO Status= %x\n",
-			readl(i2c->regs + HSI2C_BATCHER_FIFO_STATUS));
-			dev_warn(i2c->dev, "Batcher INT Status= %x\n",
-			readl(i2c->regs + HSI2C_BATCHER_INT_STATUS));
-			recover_gpio_pins(i2c);
+			if (i2c_batcher_state & BATCHER_OPERATION_COMPLETE) {
+				i2c_batcher_state |= BATCHER_OPERATION_COMPLETE;
+				writel(i2c_batcher_state, i2c->regs + HSI2C_BATCHER_STATE);
 
-			reset_batcher(i2c);
-			release_ap_semaphore(i2c);
+				/* Initialize Batcher */
+				set_batcher_idle(i2c);
+			} else {
+				/* Write Error handlilng for HSI2C_Batcher */
+				dev_warn(i2c->dev, "tx timeout Batcher status= %x\n",
+				readl(i2c->regs + HSI2C_BATCHER_STATE));
 
-			return ret;
+				dev_warn(i2c->dev, "Batcher FIFO Status= %x\n",
+				readl(i2c->regs + HSI2C_BATCHER_FIFO_STATUS));
+				dev_warn(i2c->dev, "Batcher INT Status= %x\n",
+				readl(i2c->regs + HSI2C_BATCHER_INT_STATUS));
+
+				/* Batcher recovery */
+				recover_batcher(i2c, i2c_batcher_state);
+
+				return ret;
+			}
 		}
 		ret = 0;
 	}
@@ -1412,13 +1482,25 @@ static int exynos5_i2c_xfer(struct i2c_adapter *adap,
 	exynos_update_ip_idle_status(i2c->idle_ip_index, 0);
 	clk_prepare_enable(i2c->clk);
 #endif
+	/* If master is in arbitration lost state before transfer */
+	/* master should be reset */
+	if(i2c->reset_before_trans) {
+		if (unlikely((readl(i2c->regs + HSI2C_TRANS_STATUS)
+			& HSI2C_MAST_ST_MASK) == 0xC)) {
+			i2c->need_hw_init = 1;
+		}
+	}
+
 	if (i2c->need_hw_init)
 		exynos5_i2c_reset(i2c);
 
-	if (unlikely(!(readl(i2c->regs + HSI2C_AUTO_CONF)
+	if (!(i2c->support_hsi2c_batcher)) {
+		if (unlikely(!(readl(i2c->regs + HSI2C_CONF)
 			& HSI2C_AUTO_MODE))) {
-		exynos5_hsi2c_clock_setup(i2c);
-		exynos5_i2c_init(i2c);
+			dev_err(i2c->dev, "HSI2C should be reconfigured\n");
+			exynos5_hsi2c_clock_setup(i2c);
+			exynos5_i2c_init(i2c);
+		}
 	}
 
 	for (retry = 0; retry < adap->retries; retry++) {
@@ -1570,6 +1652,11 @@ static int exynos5_i2c_probe(struct platform_device *pdev)
 		i2c->cmd_buffer = HSI2C_BATCHER_INIT_CMD;
 	} else
 		i2c->support_hsi2c_batcher = 0;
+
+	if (of_get_property(np, "samsung,reset-before-trans", NULL))
+		i2c->reset_before_trans = 1;
+	else
+		i2c->reset_before_trans = 0;
 
 	i2c->idle_ip_index = exynos_get_idle_ip_index(dev_name(&pdev->dev));
 
@@ -1776,7 +1863,9 @@ static int exynos5_i2c_resume_noirq(struct device *dev)
 	i2c_lock_adapter(&i2c->adap);
 	exynos_update_ip_idle_status(i2c->idle_ip_index, 0);
 	clk_prepare_enable(i2c->clk);
-	exynos5_i2c_reset(i2c);
+	/* I2C for batcher doesn't need reset */
+	if(!(i2c->support_hsi2c_batcher))
+		exynos5_i2c_reset(i2c);
 	clk_disable_unprepare(i2c->clk);
 	exynos_update_ip_idle_status(i2c->idle_ip_index, 1);
 	i2c->suspended = 0;

@@ -253,6 +253,8 @@ int sensor_5e3_cis_init(struct v4l2_subdev *subdev)
 		ret = -EINVAL;
 		goto p_err;
 	}
+
+	cis->use_dgain = false;
 #endif
 
 	setinfo.return_value = 0;

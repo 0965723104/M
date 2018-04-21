@@ -1729,6 +1729,12 @@ static long ion_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		if (data.preload.count == 0)
 			return 0;
 
+		if (data.preload.count > 8) {
+			pr_warn("%s: number of object types should be < 9\n",
+				__func__);
+			return -EPERM;
+		}
+
 		obj = kmalloc(sizeof(*obj) * data.preload.count, GFP_KERNEL);
 		if (!obj)
 			return -ENOMEM;
@@ -1822,6 +1828,8 @@ static int ion_debug_heap_show(struct seq_file *s, void *unused)
 	seq_printf(s, "%16.s %16.s %16.s\n", "client", "pid", "size");
 	seq_puts(s, "----------------------------------------------------\n");
 
+	down_read(&dev->lock);
+
 	for (n = rb_first(&dev->clients); n; n = rb_next(n)) {
 		struct ion_client *client = rb_entry(n, struct ion_client,
 						     node);
@@ -1869,6 +1877,8 @@ static int ion_debug_heap_show(struct seq_file *s, void *unused)
 
 	if (heap->debug_show)
 		heap->debug_show(heap, s, unused);
+
+	up_read(&dev->lock);
 
 	return 0;
 }

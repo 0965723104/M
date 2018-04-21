@@ -20,11 +20,8 @@
 #include <linux/regulator/driver.h>
 #include <linux/pm_qos.h>
 #include <linux/delay.h>
-#ifdef CONFIG_EXYNOS_APM
-#include <mach/apm-exynos.h>
-#endif
+
 #include <mach/asv-exynos.h>
-#include <mach/asv-exynos_cal.h>
 #ifdef MALI64_PORTING
 #include <mach/asv-exynos7_cal.h>
 #endif
@@ -43,33 +40,29 @@ extern struct kbase_device *pkbdev;
 
 #define CPU_MAX PM_QOS_CLUSTER1_FREQ_MAX_DEFAULT_VALUE
 
-#ifdef CONFIG_EXYNOS_BUSMONITOR
-void __iomem *g3d0_outstanding_regs;
-void __iomem *g3d1_outstanding_regs;
-#endif /* CONFIG_EXYNOS_BUSMONITOR */
-
-/*  clk,vol,abb,min,max,down stay, time, pm_qos mem,
+/*  clk,vol,abb,min,max,down stay, pm_qos mem,
 	pm_qos int, pm_qos cpu_kfc_min, pm_qos cpu_egl_max */
 static gpu_dvfs_info gpu_dvfs_table_default[] = {
-	{910, 1150000, 0,  99, 100, 1, 0, 825000, 400000,  1300000, 1586000},
-	{845, 1100000, 0,  98,  99, 2, 0, 728000, 400000,  1196000, 1586000},
-	{734, 1025000, 0,  97,  98, 5, 0, 728000, 400000,  1105000, 1586000},
-	{667, 1000000, 0,  96,  97, 9, 0, 666000, 333000,  1001000, 1586000},
-	{533,  900000, 0,  90,  98, 1, 0, 666000, 333000,   806000, 1586000},
-	{350,  750000, 0,  78,  95, 1, 0, 559000, 275000,   702000, 1586000},
-	{266,  650000, 0,  10,  20, 1, 0, 413000, 275000,   598000, 1586000},
-	{160,  500000, 0,  10,  20, 1, 0, 413000, 275000, 	 0, 1586000},
+	{845, 1100000, 0,  99, 100, 1, 0, 825000, 400000,  1200000, 1600000},
+	{734, 1100000, 0,  98,  99, 1, 0, 825000, 400000,  1000000, 1600000},
+	{667, 1100000, 0,  78,  85, 1, 0, 728000, 400000,   800000, 1600000},
+	{533, 1000000, 0,  78,  85, 1, 0, 666000, 334000,   500000, 1600000},
+	{350, 1000000, 0,  78,  85, 1, 0, 559000, 275000,   500000, 1600000},
+	{266,  900000, 0,  78,  85, 1, 0, 413000, 200000,   	 0, 1600000},
+	{160,  900000, 0,  10,  20, 1, 0, 413000, 200000,   	 0, 1600000},
 };
 
 
 static int mif_min_table[] = {
-	200000, 273000, 338000, 413000, 559000, 666000, 728000, 825000,
+	200000, 273000, 338000, 413000, 559000, 666000, 728000, 825000, 1000000
 };
 
+
 static gpu_attribute gpu_config_attributes[] = {
-	{GPU_MAX_CLOCK, 910},
-	{GPU_MAX_CLOCK_LIMIT, 910},
+	{GPU_MAX_CLOCK, 845},
+	{GPU_MAX_CLOCK_LIMIT, 845},
 	{GPU_MIN_CLOCK, 160},
+	{GPU_MIN_CLOCK_LIMIT, 160},
 	{GPU_DVFS_START_CLOCK, 160},
 	{GPU_DVFS_BL_CONFIG_CLOCK, 160},
 	{GPU_GOVERNOR_TYPE, G3D_DVFS_GOVERNOR_INTERACTIVE},
@@ -81,48 +74,54 @@ static gpu_attribute gpu_config_attributes[] = {
 	{GPU_GOVERNOR_TABLE_INTERACTIVE, (uintptr_t)&gpu_dvfs_table_default},
 	{GPU_GOVERNOR_TABLE_STATIC, (uintptr_t)&gpu_dvfs_table_default},
 	{GPU_GOVERNOR_TABLE_BOOSTER, (uintptr_t)&gpu_dvfs_table_default},
-	{GPU_GOVERNOR_TABLE_SIZE_DEFAULT, GPU_DVFS_TABLE_LIST_SIZE(gpu_dvfs_table_default)},
-	{GPU_GOVERNOR_TABLE_SIZE_INTERACTIVE, GPU_DVFS_TABLE_LIST_SIZE(gpu_dvfs_table_default)},
-	{GPU_GOVERNOR_TABLE_SIZE_STATIC, GPU_DVFS_TABLE_LIST_SIZE(gpu_dvfs_table_default)},
-	{GPU_GOVERNOR_TABLE_SIZE_BOOSTER, GPU_DVFS_TABLE_LIST_SIZE(gpu_dvfs_table_default)},
+	{GPU_GOVERNOR_TABLE_SIZE_DEFAULT,
+		GPU_DVFS_TABLE_LIST_SIZE(gpu_dvfs_table_default)},
+	{GPU_GOVERNOR_TABLE_SIZE_INTERACTIVE,
+		GPU_DVFS_TABLE_LIST_SIZE(gpu_dvfs_table_default)},
+	{GPU_GOVERNOR_TABLE_SIZE_STATIC,
+		GPU_DVFS_TABLE_LIST_SIZE(gpu_dvfs_table_default)},
+	{GPU_GOVERNOR_TABLE_SIZE_BOOSTER,
+		GPU_DVFS_TABLE_LIST_SIZE(gpu_dvfs_table_default)},
 	{GPU_GOVERNOR_INTERACTIVE_HIGHSPEED_CLOCK, 533},
 	{GPU_GOVERNOR_INTERACTIVE_HIGHSPEED_LOAD, 95},
 	{GPU_GOVERNOR_INTERACTIVE_HIGHSPEED_DELAY, 0},
-	{GPU_DEFAULT_VOLTAGE, 900000},
+	{GPU_DEFAULT_VOLTAGE, 800000},
 	{GPU_COLD_MINIMUM_VOL, 0},
 	{GPU_VOLTAGE_OFFSET_MARGIN, 37500},
-	{GPU_TMU_CONTROL, 0},
+	{GPU_TMU_CONTROL, 1},
 	{GPU_TEMP_THROTTLING1, 845},
-	{GPU_TEMP_THROTTLING2, 734}, 
-	{GPU_TEMP_THROTTLING3, 667},
-	{GPU_TEMP_THROTTLING4, 533},
+	{GPU_TEMP_THROTTLING2, 667},
+	{GPU_TEMP_THROTTLING3, 440},
+	{GPU_TEMP_THROTTLING4, 350},
 	{GPU_TEMP_TRIPPING, 266},
 	{GPU_POWER_COEFF, 46}, /* all core on param */
 	{GPU_DVFS_TIME_INTERVAL, 5},
 	{GPU_DEFAULT_WAKEUP_LOCK, 1},
-	{GPU_BUS_DEVFREQ, 0},
+	{GPU_BUS_DEVFREQ, 1},
 	{GPU_DYNAMIC_ABB, 0},
 	{GPU_EARLY_CLK_GATING, 0},
 	{GPU_DVS, 0},
+	{GPU_PERF_GATHERING, 0},
 #ifdef MALI_SEC_HWCNT
 	{GPU_HWCNT_GATHERING, 1},
+	{GPU_HWCNT_POLLING_TIME, 90},
+	{GPU_HWCNT_UP_STEP, 3},
+	{GPU_HWCNT_DOWN_STEP, 2},
 	{GPU_HWCNT_GPR, 1},
 	{GPU_HWCNT_DUMP_PERIOD, 50}, /* ms */
 	{GPU_HWCNT_CHOOSE_JM , 0},
-	{GPU_HWCNT_CHOOSE_SHADER , 0xF8}, //back to default
+	{GPU_HWCNT_CHOOSE_SHADER , 0x5FF}, /* since TEX_ISSUES offset is 29 so we need non-zero values from 27-30 offset
+					      of each shader core and hence 0x560 is changed to 0x5E0 */
 	{GPU_HWCNT_CHOOSE_TILER , 0},
 	{GPU_HWCNT_CHOOSE_L3_CACHE , 0},
 	{GPU_HWCNT_CHOOSE_MMU_L2 , 0},
 #endif
-	{GPU_RUNTIME_PM_DELAY_TIME, 50}, //back to default
-	{GPU_DVFS_POLLING_TIME, 30}, //back to default
-	{GPU_PERF_GATHERING, 0},
+	{GPU_RUNTIME_PM_DELAY_TIME, 50},
+	{GPU_DVFS_POLLING_TIME, 30},
 	{GPU_PMQOS_INT_DISABLE, 0},
 	{GPU_PMQOS_MIF_MAX_CLOCK, 825000},
-	{GPU_PMQOS_MIF_MAX_CLOCK_BASE, 910},
-#ifdef CONFIG_EXYNOS_CL_DVFS_G3D
-	{GPU_CL_DVFS_START_BASE, 667},
-#endif
+	{GPU_PMQOS_MIF_MAX_CLOCK_BASE, 534},
+	{GPU_CL_DVFS_START_BASE, 600},
 	{GPU_DEBUG_LEVEL, DVFS_WARNING},
 	{GPU_TRACE_LEVEL, TRACE_ALL},
 };
@@ -602,10 +601,7 @@ int gpu_clock_init(struct kbase_device *kbdev)
 	}
 #endif
 
-#ifdef CONFIG_EXYNOS_BUSMONITOR
-	g3d0_outstanding_regs = ioremap(0x14A00000, SZ_1K);
-	g3d1_outstanding_regs = ioremap(0x14A20000, SZ_1K);
-#endif /* CONFIG_EXYNOS_BUSMONITOR */
+
 
 	GPU_LOG(DVFS_INFO, DUMMY, 0u, 0u, "clock initialized\n");
 
@@ -730,9 +726,4 @@ int *get_mif_table(int *size)
 {
 	*size = ARRAY_SIZE(mif_min_table);
 	return mif_min_table;
-}
-
-void exynos3475_set_ema (unsigned int volt)
-{
-	cal_set_ema(SYSC_DVFS_G3D, volt);
 }

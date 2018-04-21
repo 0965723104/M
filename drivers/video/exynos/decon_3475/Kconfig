@@ -47,6 +47,13 @@ config DECON_MIPI_DSI_PKTGO
 	help
 	  Enable/disable MIPI-DSI Packet Go function
 
+config DECON_MIPI_DSI_CLK_SWITCH
+	bool "Samsung Exynos MIPI-DSI HS CLK SWITCH"
+	depends on EXYNOS_DECON_EXYNOS3475 && EXYNOS_MIPI_DSI
+	default n
+	help
+	  Enable/disable MIPI-DSI HS CLK SWITCH When screen off/on
+
 config DECON_LPD_DISPLAY
         bool "Decon Low Power Display MODE"
         depends on EXYNOS_DECON_EXYNOS3475

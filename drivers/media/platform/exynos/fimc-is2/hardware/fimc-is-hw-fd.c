@@ -165,6 +165,8 @@ int fimc_is_hw_fd_otf_input(void __iomem *base_addr, struct vra_param *param)
 	fimc_is_fd_set_down_sampling(base_addr, scale_x, scale_y);
 	fimc_is_fd_set_output_size(base_addr, out_width, out_height, out_size);
 	fimc_is_fd_ycc_format(base_addr, ycc_format);
+	fimc_is_fd_set_cbcr_align(base_addr, FD_FORMAT_FIRST_CBCR);
+
 exit:
 	return ret;
 }

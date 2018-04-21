@@ -365,11 +365,12 @@ probe_exit:
 }
 
 struct dsim_panel_ops sc7798d_panel_ops = {
-	.early_probe = NULL,
-	.probe		= sc7798d_probe,
-	.displayon	= sc7798d_displayon,
-	.exit		= sc7798d_exit,
-	.init		= sc7798d_init,
+	.early_probe	= NULL,
+	.probe			= sc7798d_probe,
+	.displayon		= sc7798d_displayon,
+	.displayon_late	= sc7798d_displayon_late,
+	.exit			= sc7798d_exit,
+	.init			= sc7798d_init,
 };
 
 

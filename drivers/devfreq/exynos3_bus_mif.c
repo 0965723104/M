@@ -33,13 +33,9 @@
 #include "devfreq_exynos.h"
 #include "governor.h"
 
-#define MIF_RESUME_FREQ (413000)
+#define MIF_RESUME_FREQ (559000)
 
-static struct devfreq_simple_exynos_data exynos3_devfreq_mif_governor_data= {
-	.pm_qos_class		= PM_QOS_BUS_THROUGHPUT,
-	.pm_qos_class_max	= PM_QOS_BUS_THROUGHPUT_MAX,
-	.cal_qos_max		= 825000,
-};
+static struct devfreq_simple_exynos_data exynos3_devfreq_mif_governor_data;
 static struct exynos_devfreq_platdata exynos3_qos_mif;
 
 static unsigned long current_freq;
@@ -249,7 +245,7 @@ static int exynos3_devfreq_mif_probe(struct platform_device *pdev)
 	pm_qos_add_request(&exynos3_mif_qos, PM_QOS_BUS_THROUGHPUT, exynos3_qos_mif.default_qos);
 	pm_qos_add_request(&min_mif_thermal_qos, PM_QOS_BUS_THROUGHPUT, exynos3_qos_mif.default_qos);
 	pm_qos_add_request(&boot_mif_qos, PM_QOS_BUS_THROUGHPUT, exynos3_qos_mif.default_qos);
-	pm_qos_add_request(&exynos3_mif_qos_max, PM_QOS_BUS_THROUGHPUT_MAX, PM_QOS_BUS_THROUGHPUT_MAX_DEFAULT_VALUE);
+	pm_qos_add_request(&exynos3_mif_qos_max, PM_QOS_BUS_THROUGHPUT_MAX, cal_qos_max);
 	pm_qos_update_request_timeout(&boot_mif_qos,
 					exynos3_devfreq_mif_profile.initial_freq, 40000 * 1000);
 
@@ -393,7 +389,6 @@ static int exynos3_devfreq_mif_suspend(struct device *dev)
 	uint32_t reg, tmp;
 
 	pm_qos_update_request(&exynos3_mif_qos, MIF_RESUME_FREQ);
-	pm_qos_update_request(&exynos3_mif_qos_max, MIF_RESUME_FREQ);
 
 	/* enable ABR */
 	reg = __raw_readl(data->base_drex + MEMCONTROL);
@@ -425,8 +420,8 @@ static int exynos3_devfreq_mif_resume(struct device *dev)
 	reg |= PB_REF_EN_MASK;
 	__raw_writel(reg, data->base_drex + MEMCONTROL);
 
-	pm_qos_update_request(&exynos3_mif_qos_max, PM_QOS_BUS_THROUGHPUT_MAX_DEFAULT_VALUE);
-	pm_qos_update_request(&exynos3_mif_qos, data->default_qos);
+	pm_qos_update_request(&exynos3_mif_qos_max, devfreq_mif->max_freq);
+	pm_qos_update_request(&exynos3_mif_qos, devfreq_mif->min_freq);
 
 	return 0;
 }

@@ -201,7 +201,7 @@
 	hsi2c@104C0000 {
         status = "okay";
 		samsung,hs-mode;
-		clock-frequency = <1703000>;
+		clock-frequency = <1800000>;
 		samsung,hsi2c-batcher;
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -606,7 +606,7 @@
 		clk_val = <0x2>;
 		clk_str_num = <4>;
 		num-ref-clks = <10>;
-		ciu_clkin = <25 50 50 100 200 100 200 400 400 200>;
+		ciu_clkin = <22 42 42 84 167 84 167 334 334 167>;
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&sd0_clk &sd0_cmd &sd0_rdqs &sd0_bus1 &sd0_bus4 &sd0_bus8>;
@@ -679,7 +679,7 @@
 		clk_val = <0x2>;
 		clk_str_num = <4>;
 		num-ref-clks = <8>;
-		ciu_clkin = <25 50 50 100 200 100 200 400>; /* clk  */
+		ciu_clkin = <22 42 42 84 167 84 167 334>; /* clk 666Mhz */
 		pinctrl-names = "default", "output";
 		pinctrl-0 = <&sd2_clk &sd2_cmd &sd2_bus1 &sd2_bus4 &dwmmc2_cd_ext_irq>;
 		pinctrl-1 = <&sd2_clk_output &sd2_cmd_output &sd2_bus1 &sd2_bus4 &dwmmc2_cd_ext_irq>;
@@ -741,9 +741,9 @@
 			delay = <10000 11000>, <10000 11000>;
 		};
 		dsim_reset_panel {
-			type = "gpio,high", "delay,usleep", "gpio,low", "delay,usleep", "gpio,high", "delay,usleep", "delay,usleep";
+			type = "gpio,high", "delay,usleep", "gpio,low", "delay,usleep", "gpio,high", "delay,usleep";
 			gpios = <&gpd2 2 0x1>, <&gpd2 2 0x1>, <&gpd2 2 0x1>;
-			delay = <5000 6000>, <5000 6000>, <10000 11000>, <40000 41000>;
+			delay = <5000 6000>, <5000 6000>, <10000 11000>;
 		};
 	};
 
@@ -943,8 +943,8 @@
 			ois = <0>;			/* 0 : N , 1 : Y  */
 		};
 
-		#define DVFS_INT_L0 334000
-		#define DVFS_INT_L1 333000
+		#define DVFS_INT_L0 400000
+		#define DVFS_INT_L1 334000
 		#define DVFS_INT_L2 276000
 		#define DVFS_INT_L3 207000
 		#define DVFS_INT_L4 138000
@@ -952,12 +952,14 @@
 
 		#define DVFS_CAM_L0 0
 
-		#define DVFS_MIF_L0 825000
-		#define DVFS_MIF_L1 728000
-		#define DVFS_MIF_L2 666000
-		#define DVFS_MIF_L3 559000
-		#define DVFS_MIF_L4 413000
-		#define DVFS_MIF_L5 338000
+		#define DVFS_MIF_L0 1000000
+		#define DVFS_MIF_L1 825000
+		#define DVFS_MIF_L2 728000
+		#define DVFS_MIF_L3 666000
+		#define DVFS_MIF_L4 559000
+		#define DVFS_MIF_L5 413000
+		
+
 		fimc_is_dvfs {
 			default_int = <DVFS_INT_L0>;
 			default_cam = <DVFS_CAM_L0>;
@@ -1094,8 +1096,8 @@
 
 		mif,ap_clk_table = <
 			/* khz */
-			1703000
-			1586000
+			1700000
+			1560000
 			1495000
 			1404000
 			1300000
@@ -1114,12 +1116,15 @@
 
 		mif,mif_clk_table = <
 			/* khz */
+			1000000
 			825000
 			728000
 			666000
 			559000
 			413000
 			338000
+			273000
+		
 			>;
 	};
 
@@ -1200,11 +1205,16 @@
 			net_boost,node="rmnet0 rmnet1 rmnet2 rmnet3 rmnet4 rmnet5 rmnet6 rmnet7 umts_dm0";
 			net_boost,table_size = <4>;
 			net_boost,table= <  1 0 0 0 0 0 1
-					   20 702000 0 413000 100000 0 1
-					   50 1001000 0 825000 100000 0 1
-					  100 1404000 0 825000 100000 0 1>;
+					   20 702000 0 559000 100000 0 1
+					   50 897000 0 825000 100000 0 1
+					  100 1300000 0 1000000 100000 0 1>;
 		};
-
+		boot_device@2 {
+			net_boost,label="USB";
+			net_boost,node="rndis0";
+			net_boost,table_size = <1>;
+			net_boost,table= < 1 0 0 0 0 0 1 >;
+		};
 		/* Example
 		   boot_device@2 {
 		   net_boost,label="EMMC";

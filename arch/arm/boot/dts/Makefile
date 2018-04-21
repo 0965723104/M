@@ -46,20 +46,20 @@ dtb-$(CONFIG_ARCH_DAVINCI) += da850-enbw-cmc.dtb \
 dtb-$(CONFIG_ARCH_DOVE) += dove-cm-a510.dtb \
 	dove-cubox.dtb \
 	dove-dove-db.dtb
-#dtb-$(CONFIG_ARCH_EXYNOS) += exynos4210-origen.dtb \
-#	exynos4210-smdkv310.dtb \
-#	exynos4210-trats.dtb \
-#	exynos4210-universal_c210.dtb \
-#	exynos4412-odroidx.dtb \
-#	exynos4412-smdk4412.dtb \
-#	exynos4412-origen.dtb \
-#	exynos5250-arndale.dtb \
-#	exynos5440-sd5v1.dtb \
-#	exynos5250-smdk5250.dtb \
-#	exynos5250-snow.dtb \
-#	exynos5422-smdk5422.dtb \
-#	exynos5430-xyref5430.dtb \
-#	exynos5440-ssdk5440.dtb
+dtb-$(CONFIG_ARCH_EXYNOS) += exynos4210-origen.dtb \
+	exynos4210-smdkv310.dtb \
+	exynos4210-trats.dtb \
+	exynos4210-universal_c210.dtb \
+	exynos4412-odroidx.dtb \
+	exynos4412-smdk4412.dtb \
+	exynos4412-origen.dtb \
+	exynos5250-arndale.dtb \
+	exynos5440-sd5v1.dtb \
+	exynos5250-smdk5250.dtb \
+	exynos5250-snow.dtb \
+	exynos5422-smdk5422.dtb \
+	exynos5430-xyref5430.dtb \
+	exynos5440-ssdk5440.dtb
 dtb-$(CONFIG_ARCH_HIGHBANK) += highbank.dtb \
 	ecx-2000.dtb
 dtb-$(CONFIG_ARCH_INTEGRATOR) += integratorap.dtb \
@@ -212,17 +212,6 @@ dtb-$(CONFIG_ARCH_VT8500) += vt8500-bv07.dtb \
 	wm8650-mid.dtb \
 	wm8850-w70v2.dtb
 dtb-$(CONFIG_ARCH_ZYNQ) += zynq-zc702.dtb
-dtb-$(CONFIG_MACH_EXYNOS3475_ON5LTE_CHN) := \
-	exynos3475-o5lte_chn_open_00.dtb \
-	
-dtb-$(CONFIG_MACH_EXYNOS3475_J2LTE_EUR) := \
-	exynos3475-j2lte_eur_open_01.dtb \
-	exynos3475-j2lte_eur_open_02.dtb \
-	exynos3475-j2lte_eur_open_03.dtb
-
-dtb-$(CONFIG_MACH_EXYNOS3475_ON5LTE_SWA) := \
-	exynos3475-o5lte_swa_open_00.dtb
-
 
 DTB_NAMES := $(subst $\",,$(CONFIG_BUILD_ARM_APPENDED_DTB_IMAGE_NAMES))
 ifneq ($(DTB_NAMES),)

@@ -888,6 +888,9 @@ int dsim_reg_prepare_clocks(struct dsim_clks_param *clks_param)
 	int ret;
 	u32 esc_div;
 
+	if (clks_param->pll.pll_freq && clks_param->pll.pll_freq == clks_param->clks.hs_clk)
+		return 0;
+
 	/* calculate P,M,S for HS clock */
 	/* requested DPHY PLL frequency(HS clock) */
 	pll.pll_freq = clks_param->clks.hs_clk;

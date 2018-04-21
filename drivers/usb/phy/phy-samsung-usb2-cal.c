@@ -254,7 +254,7 @@ void samsung_exynos_cal_dwc_usb2phy_tune(int cpu_type, void __iomem *regs_base,
 			break;
 		case USB_PHY_TYPE_HOST:
 			phyparam0 &= ~PHYPARAM0_TXVREFTUNE_MASK;
-			phyparam0 |= PHYPARAM0_TXVREFTUNE(0x9);
+			phyparam0 |= PHYPARAM0_TXVREFTUNE(0x5);
 			phyparam0 &= ~PHYPARAM0_TXPREEMPAMPTUNE_MASK;
 			phyparam0 |= PHYPARAM0_TXPREEMPAMPTUNE(0x2);
 			phyparam0 &= ~PHYPARAM0_COMPDISTUNE_MASK;

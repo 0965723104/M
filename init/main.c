@@ -74,7 +74,9 @@
 #include <linux/ptrace.h>
 #include <linux/blkdev.h>
 #include <linux/elevator.h>
-#include <linux/random.h>
+#if defined(CONFIG_SEC_INITCALL_DEBUG)
+#include <linux/sec_debug.h>
+#endif
 
 #include <asm/io.h>
 #include <asm/bugs.h>
@@ -606,10 +608,6 @@ asmlinkage void __init start_kernel(void)
 	if (efi_enabled(EFI_RUNTIME_SERVICES))
 		efi_enter_virtual_mode();
 #endif
-#ifdef CONFIG_X86_ESPFIX64
-	/* Should be run before the first non-init thread is created */
-	init_espfix_bsp();
-#endif
 	thread_info_cache_init();
 	cred_init();
 	fork_init(totalram_pages);
@@ -676,6 +674,11 @@ static int __init_or_module do_one_initcall_debug(initcall_t fn)
 	duration = (unsigned long long) ktime_to_ns(delta) >> 10;
 	pr_debug("initcall %pF returned %d after %lld usecs\n",
 		 fn, ret, duration);
+
+#if defined(CONFIG_SEC_INITCALL_DEBUG)
+	if (SEC_INITCALL_DEBUG_MIN_TIME < duration)
+		sec_initcall_debug_add(fn, duration);
+#endif
 
 	return ret;
 }
@@ -782,7 +785,6 @@ static void __init do_basic_setup(void)
 	do_ctors();
 	usermodehelper_enable();
 	do_initcalls();
-	random_int_secret_init();
 }
 
 static void __init do_pre_smp_initcalls(void)

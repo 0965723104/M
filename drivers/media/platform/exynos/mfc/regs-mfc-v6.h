@@ -174,6 +174,7 @@ static inline unsigned int r2h_bits(int cmd)
 
 #define S5P_FIMV_D_SEI_ENABLE			0xF0C4
 #define S5P_FIMV_D_SEI_NEED_INIT_BUFFER_SHIFT	1
+#define S5P_FIMV_D_SEI_RECOVERY_PARSING_ENABLE	2
 
 /* Buffer setting registers */
 #define S5P_FIMV_D_MIN_NUM_DPB			0xF0F0
@@ -547,6 +548,7 @@ static inline unsigned int r2h_bits(int cmd)
 #define S5P_FIMV_NEW_RC_QP_BOUND		S5P_FIMV_E_RC_QP_BOUND
 
 #define S5P_FIMV_ERR_FRAME_CONCEAL		150
+#define S5P_FIMV_ERR_NON_PAIRED_FIELD		191
 /*** End of MFCv5 compatibility definitions ***/
 
 /***      old definitions     ***/

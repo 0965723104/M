@@ -19,16 +19,22 @@
 #include "fimc-is-metadata.h"
 
 /* FD heap size is calculated by the appointed  formula  */
-#define FD_HEAP_SIZE			((FD_MAP_WIDTH * FD_MAP_HEIGHT / 16) + (130 * 1024))
+#define FD_HEAP_SIZE			((FD_MAX_MAP_WIDTH * FD_MAX_MAP_HEIGHT / 16) + (130 * 1024))
 #define FD_LIB_NORMAL_THREAD
 #define MAX_FIMC_IS_LIB_TASK		(1)
 #define FD_ALIGN(x, alignbyte)		((((x)+(alignbyte)-1) / (alignbyte)) * (alignbyte))
 #define SET32(addr, data)		(*(volatile u32 *)(addr) = (data))
 #define SET64(addr, data)		(*(volatile ulong *)(addr) = (data))
+
 #define FD_MAX_MAP_WIDTH		640
 #define FD_MAX_MAP_HEIGHT		480
-#define FD_MAP_WIDTH			640
-#define FD_MAP_HEIGHT			480
+#define FD_MAP_WIDTH_4_3		320
+#define FD_MAP_HEIGHT_4_3		240
+#define FD_MAP_WIDTH_16_9		320
+#define FD_MAP_HEIGHT_16_9		180
+#define FD_MAP_WIDTH_1_1		240
+#define FD_MAP_HEIGHT_1_1		240
+
 #define FD_MAX_SCENARIO			(64)
 #define FD_MAX_SETFILE			(16)
 #define FD_SET_FILE_MAGIC_NUMBER	(0x12345679)

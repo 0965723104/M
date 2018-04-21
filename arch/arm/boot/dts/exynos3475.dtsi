@@ -933,9 +933,9 @@
 
 		bus_type_int    = <0>;
 
-		pm_qos_class    = <4>;
-		cal_qos_max     = <00 334000>;
-		default_qos     = <00 275000>;
+		pm_qos_class    = <5>;
+		cal_qos_max     = <00 400000>;
+		default_qos     = <00 334000>;
 		initial_freq    = <00 334000>;
 		polling_period  = <0>;
 	};
@@ -944,11 +944,12 @@
 		compatible = "samsung,exynos3-devfreq-mif";
 
 		bus_type_mif    = <1>;
-		pm_qos_class        = <7>;
-		pm_qos_class_max    = <8>;
-		cal_qos_max     = <00 825000>;
-		default_qos     = <00 413000>;
-		initial_freq    = <00 825000>;
+
+		pm_qos_class        = <8>;
+		pm_qos_class_max    = <9>;
+		cal_qos_max     = <00 1000000>;
+		default_qos     = <00 559000>;
+		initial_freq    = <00 1000000>;
 		polling_period  = <0>;
 	};
 

@@ -232,7 +232,7 @@ void decon_int_set_clocks(struct decon_device *decon)
 		decon_clk_set_rate(dev, decon->res.d_decon0_vclk, 35 * MHZ);
 		decon_clk_set_rate(dev, decon->res.d_sclk_disp_decon0_eclk, 207 * MHZ);
 		decon_clk_set_rate(dev, decon->res.d_decon0_eclk, 42 * MHZ);
-	} else if (IS_ENABLED(CONFIG_PANEL_S6D7AA0_DYNAMIC)) {
+	} else if (IS_ENABLED(CONFIG_EXYNOS3475_DECON_LCD_S6D7AA0)) {
 		clk_set_parent(decon->res.d_sclk_disp_decon0_eclk, decon->res.m_sclk_disp_decon0_eclk);
 
 		decon_clk_set_rate(dev, decon->res.d_sclk_disp_decon0_vclk, 69 * MHZ);
@@ -244,11 +244,26 @@ void decon_int_set_clocks(struct decon_device *decon)
 
 		decon_clk_set_rate(dev, decon->res.d_decon0_vclk, 38 * MHZ);
 		decon_clk_set_rate(dev, decon->res.d_decon0_eclk, 46* MHZ);
-	} else if (IS_ENABLED(CONFIG_EXYNOS3475_DECON_LCD_ILI9881C)) {
+	} else if (IS_ENABLED(CONFIG_EXYNOS3475_DECON_LCD_EA8061S_J1)) {
+		clk_set_parent(decon->res.d_sclk_disp_decon0_eclk, decon->res.m_sclk_disp_decon0_eclk);
+
+		decon_clk_set_rate(dev, decon->res.d_decon0_vclk, 31 * MHZ);
+		decon_clk_set_rate(dev, decon->res.d_decon0_eclk, 35* MHZ);
+	} else if (IS_ENABLED(CONFIG_EXYNOS3475_DECON_LCD_SC7798D_XCOVER3)) {
+		clk_set_parent(decon->res.d_sclk_disp_decon0_eclk, decon->res.m_sclk_disp_decon0_eclk);
+
+		decon_clk_set_rate(dev, decon->res.d_decon0_vclk, 43 * MHZ);
+		decon_clk_set_rate(dev, decon->res.d_decon0_eclk, 47* MHZ);
+	} else if (IS_ENABLED(CONFIG_EXYNOS3475_DECON_LCD_ILI9881C) || IS_ENABLED(CONFIG_EXYNOS3475_DECON_LCD_S6D7AA0X62)) {
 		clk_set_parent(decon->res.d_sclk_disp_decon0_eclk, decon->res.m_sclk_disp_decon0_eclk);
 
 		decon_clk_set_rate(dev, decon->res.d_decon0_vclk, 76 * MHZ);
 		decon_clk_set_rate(dev, decon->res.d_decon0_eclk, 92 * MHZ);
+	} else if (IS_ENABLED(CONFIG_EXYNOS3475_DECON_LCD_S6E8AA5X01)) {
+		clk_set_parent(decon->res.d_sclk_disp_decon0_eclk, decon->res.m_sclk_disp_decon0_eclk);
+
+		decon_clk_set_rate(dev, decon->res.d_decon0_vclk, 76 * MHZ);
+		decon_clk_set_rate(dev, decon->res.d_decon0_eclk, 92* MHZ);
 	} else {
 		clk_set_parent(decon->res.d_sclk_disp_decon0_eclk, decon->res.m_sclk_disp_decon0_eclk);
 
@@ -707,9 +722,9 @@ static void decon_fb_missing_pixclock(struct decon_fb_videomode *win_mode,
 		width = win_mode->videomode.xres;
 		height = win_mode->videomode.yres;
 	} else {
-		width  = win_mode->videomode.left_margin + /* win_mode->videomode.hsync_len + */
+		width  = win_mode->videomode.left_margin + win_mode->videomode.hsync_len +
 			win_mode->videomode.right_margin + win_mode->videomode.xres;
-		height = win_mode->videomode.upper_margin + /* win_mode->videomode.vsync_len + */
+		height = win_mode->videomode.upper_margin + win_mode->videomode.vsync_len +
 			win_mode->videomode.lower_margin + win_mode->videomode.yres;
 	}
 

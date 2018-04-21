@@ -19,6 +19,7 @@ extern struct pm_qos_request exynos_isp_qos_mem;
 extern struct pm_qos_request exynos_isp_qos_cam;
 
 DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_FRONT_PREVIEW);
+DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_FRONT_PREVIEW_BINNING);
 DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_FRONT_CAPTURE);
 DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_FRONT_CAMCORDING);
 DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_FRONT_CAMCORDING_WHD);
@@ -37,6 +38,7 @@ DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_FRONT_COMPANION_CAMCORDING_WHD_CAPTURE);
 DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_REAR_PREVIEW_FHD);
 DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_REAR_PREVIEW_WHD);
 DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_REAR_PREVIEW_UHD);
+DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_REAR_PREVIEW_BINNING);
 DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_REAR_CAPTURE);
 DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_REAR_CAMCORDING_FHD);
 DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_REAR_CAMCORDING_UHD);
@@ -94,6 +96,10 @@ static struct fimc_is_dvfs_scenario static_scenarios[] = {
 		.scenario_nm		= DVFS_SN_STR(FIMC_IS_SN_REAR_CAMCORDING_UHD),
 		.check_func		= GET_DVFS_CHK_FUNC(FIMC_IS_SN_REAR_CAMCORDING_UHD),
 	}, {
+		.scenario_id		= FIMC_IS_SN_REAR_PREVIEW_BINNING,
+		.scenario_nm		= DVFS_SN_STR(FIMC_IS_SN_REAR_PREVIEW_BINNING),
+		.check_func		= GET_DVFS_CHK_FUNC(FIMC_IS_SN_REAR_PREVIEW_BINNING),
+	}, {
 		.scenario_id		= FIMC_IS_SN_REAR_PREVIEW_FHD,
 		.scenario_nm		= DVFS_SN_STR(FIMC_IS_SN_REAR_PREVIEW_FHD),
 		.check_func		= GET_DVFS_CHK_FUNC(FIMC_IS_SN_REAR_PREVIEW_FHD),
@@ -113,6 +119,10 @@ static struct fimc_is_dvfs_scenario static_scenarios[] = {
 		.scenario_id		= FIMC_IS_SN_FRONT_VT2,
 		.scenario_nm		= DVFS_SN_STR(FIMC_IS_SN_FRONT_VT2),
 		.check_func		= GET_DVFS_CHK_FUNC(FIMC_IS_SN_FRONT_VT2),
+	}, {
+		.scenario_id		= FIMC_IS_SN_FRONT_PREVIEW_BINNING,
+		.scenario_nm		= DVFS_SN_STR(FIMC_IS_SN_FRONT_PREVIEW_BINNING),
+		.check_func		= GET_DVFS_CHK_FUNC(FIMC_IS_SN_FRONT_PREVIEW_BINNING),
 	}, {
 		.scenario_id		= FIMC_IS_SN_FRONT_PREVIEW,
 		.scenario_nm		= DVFS_SN_STR(FIMC_IS_SN_FRONT_PREVIEW),
@@ -361,6 +371,20 @@ DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_REAR_CAMCORDING_UHD)
 		return 0;
 }
 
+/* rear preview BINNING */
+DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_REAR_PREVIEW_BINNING)
+{
+	if ((fimc_is_sensor_g_postion(device->sensor) == SENSOR_POSITION_REAR) &&
+			((device->setfile & FIMC_IS_SETFILE_MASK) \
+			 == ISS_SUB_SCENARIO_STILL_PREVIEW) &&
+			(fimc_is_sensor_g_bratio(device->sensor) >= 2000) &&
+			(fimc_is_sensor_g_framerate(device->sensor) <= 30))
+
+		return 1;
+	else
+		return 0;
+}
+
 /* rear preview FHD */
 DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_REAR_PREVIEW_FHD)
 {
@@ -462,6 +486,22 @@ DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_FRONT_PREVIEW)
 		(!(test_bit(FIMC_IS_COMPANION_OPEN, &core->companion.state))) &&
 			((device->setfile & FIMC_IS_SETFILE_MASK) \
 			 == ISS_SUB_SCENARIO_STILL_PREVIEW))
+		return 1;
+	else
+		return 0;
+}
+
+/* front preview binning */
+DECLARE_DVFS_CHK_FUNC(FIMC_IS_SN_FRONT_PREVIEW_BINNING)
+{
+	struct fimc_is_core *core = (struct fimc_is_core *)device->interface->core;
+
+	if ((fimc_is_sensor_g_postion(device->sensor) == SENSOR_POSITION_FRONT) &&
+		(!(test_bit(FIMC_IS_COMPANION_OPEN, &core->companion.state))) &&
+		((device->setfile & FIMC_IS_SETFILE_MASK) \
+			 == ISS_SUB_SCENARIO_STILL_PREVIEW) &&
+		(fimc_is_sensor_g_bratio(device->sensor) >= 2000) &&
+		(fimc_is_sensor_g_framerate(device->sensor) <= 30))
 		return 1;
 	else
 		return 0;

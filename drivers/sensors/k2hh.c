@@ -43,6 +43,7 @@
 #define MAX_ACCEL_1G                  8192
 
 #define K2HH_DEFAULT_DELAY            200000000LL
+#define K2HH_MIN_DELAY                5000000LL
 
 #define CHIP_ID_RETRIES               3
 #define ACCEL_LOG_TIME                15 /* 15 sec */
@@ -489,7 +490,7 @@ static int k2hh_open_calibration(struct k2hh_p *data)
 		data->caldata.y = 0;
 		data->caldata.z = 0;
 
-		SENSOR_ERR(" No Calibration\n");
+		SENSOR_INFO(" No Calibration\n");
 
 		return ret;
 	}
@@ -609,7 +610,7 @@ static void k2hh_work_func(struct work_struct *work)
 	struct k2hh_p *data = container_of(work, struct k2hh_p, work);
 	struct timespec ts;
 	u64 timestamp_new;
-	u64 timestamp;
+	u64 delay = ktime_to_ns(data->poll_delay);
 	int time_hi, time_lo;
 
 	ret = k2hh_read_accel_xyz(data, &acc);
@@ -623,23 +624,25 @@ static void k2hh_work_func(struct work_struct *work)
 	data->accdata.y = acc.y - data->caldata.y;
 	data->accdata.z = acc.z - data->caldata.z;
 
-	if (((timestamp_new - data->old_timestamp)*10 > ktime_to_ns(data->poll_delay)*18)\
+	if (((timestamp_new - data->old_timestamp)*10 > delay *18)\
 		&& (data->old_timestamp != 0))
 	{
-		timestamp = (timestamp_new + data->old_timestamp) >>  1;
-		time_hi = (int)((timestamp & TIME_HI_MASK) >> TIME_HI_SHIFT);
-		time_lo = (int)(timestamp & TIME_LO_MASK);
+		u64 shift_timestamp = delay >> 1;
+		u64 timestamp = 0ULL;
 
-		input_report_rel(data->input, REL_X, data->accdata.x);
-		input_report_rel(data->input, REL_Y, data->accdata.y);
-		input_report_rel(data->input, REL_Z, data->accdata.z);
-		input_report_rel(data->input, REL_DIAL, time_hi);
-		input_report_rel(data->input, REL_MISC, time_lo);
-		input_sync(data->input);
+		for (timestamp = data->old_timestamp + delay; timestamp < timestamp_new - shift_timestamp; timestamp+=delay){
+			time_hi = (int)((timestamp & TIME_HI_MASK) >> TIME_HI_SHIFT);
+			time_lo = (int)(timestamp & TIME_LO_MASK);
+			input_report_rel(data->input, REL_X, data->accdata.x);
+			input_report_rel(data->input, REL_Y, data->accdata.y);
+			input_report_rel(data->input, REL_Z, data->accdata.z);
+			input_report_rel(data->input, REL_DIAL, time_hi);
+			input_report_rel(data->input, REL_MISC, time_lo);
+			input_sync(data->input);
+		}
 	}
 	time_hi = (int)((timestamp_new & TIME_HI_MASK) >> TIME_HI_SHIFT);
 	time_lo = (int)(timestamp_new & TIME_LO_MASK);
-
 	input_report_rel(data->input, REL_X, data->accdata.x);
 	input_report_rel(data->input, REL_Y, data->accdata.y);
 	input_report_rel(data->input, REL_Z, data->accdata.z);
@@ -727,6 +730,8 @@ static ssize_t k2hh_delay_store(struct device *dev,
 	}
 	if (delay > K2HH_DEFAULT_DELAY)
 		delay = K2HH_DEFAULT_DELAY;
+	else if(delay < K2HH_MIN_DELAY)
+		delay = K2HH_MIN_DELAY ;
 
 	data->poll_delay = ns_to_ktime(delay);
 	k2hh_set_odr(data);
@@ -861,6 +866,7 @@ static ssize_t k2hh_raw_data_read(struct device *dev,
 			acc.x, acc.y, acc.z);
 }
 
+#if !defined(CONFIG_SENSORS_K2HH_SMART_ALERT_NOT_SUPPORT)
 static ssize_t k2hh_reactive_alert_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
@@ -948,6 +954,7 @@ static ssize_t k2hh_reactive_alert_store(struct device *dev,
 
 	return size;
 }
+#endif
 
 static ssize_t k2hh_selftest_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
@@ -1073,17 +1080,20 @@ static DEVICE_ATTR(calibration, S_IRUGO | S_IWUSR | S_IWGRP,
 static DEVICE_ATTR(lowpassfilter, S_IRUGO | S_IWUSR | S_IWGRP,
 	k2hh_lowpassfilter_show, k2hh_lowpassfilter_store);
 static DEVICE_ATTR(raw_data, S_IRUGO, k2hh_raw_data_read, NULL);
+#if !defined(CONFIG_SENSORS_K2HH_SMART_ALERT_NOT_SUPPORT)
 static DEVICE_ATTR(reactive_alert, S_IRUGO | S_IWUSR | S_IWGRP,
 	k2hh_reactive_alert_show, k2hh_reactive_alert_store);
-
+#endif
 static struct device_attribute *sensor_attrs[] = {
 	&dev_attr_name,
 	&dev_attr_vendor,
 	&dev_attr_calibration,
 	&dev_attr_lowpassfilter,
 	&dev_attr_raw_data,
-	&dev_attr_reactive_alert,
 	&dev_attr_selftest,
+#if !defined(CONFIG_SENSORS_K2HH_SMART_ALERT_NOT_SUPPORT)
+	&dev_attr_reactive_alert,
+#endif
 	NULL,
 };
 

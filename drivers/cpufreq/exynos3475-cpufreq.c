@@ -36,16 +36,16 @@ static struct clk *cpu_pll;
 static struct clk *mout_cpu;
 static struct clk *mout_mpll;
 
-static unsigned int exynos3475_volt_table[CPUFREQ_LEVEL_END];
-static unsigned int exynos3475_default_volt_table[CPUFREQ_LEVEL_END];
-/*static unsigned int exynos3475_volt_table[CPUFREQ_LEVEL_END] = {
+//static unsigned int exynos3475_volt_table[CPUFREQ_LEVEL_END];
+
+static unsigned int exynos3475_volt_table[CPUFREQ_LEVEL_END] = {
 	1200000, 1175000, 1150000, 1125000, 1100000, 1075000, 1050000,
 	1025000, 1000000, 975000, 950000, 925000, 900000,
-}; */
+};
 
 static struct cpufreq_frequency_table exynos3475_freq_table[] = {
 	{L0,  1703 * 1000}, //freeze
-	{L1,  1586 * 1000},
+	{L1,  1560 * 1000},
 	{L2,  1495 * 1000},
 	{L3,  1404 * 1000},
 	{L4,  1300 * 1000},
@@ -81,7 +81,7 @@ static unsigned int exynos3475_apll_pms_table[CPUFREQ_LEVEL_END] = {
 	/* APLL FOUT : 1700MHz */
 	PLL2555X_PMS(262, 4, 0),
 	/* APLL FOUT : 1600MHz */
-	PLL2555X_PMS(244, 4, 0),
+	PLL2555X_PMS(240, 4, 0),
 	/* APLL FOUT : 1500MHz */
 	PLL2555X_PMS(230, 4, 0),
 	/* APLL FOUT : 1400MHz */
@@ -135,10 +135,10 @@ static const unsigned int asv_voltage_3475[CPUFREQ_LEVEL_END] = {
 
 /* Minimum memory throughput in megabytes per second */
 static int exynos3475_bus_table[CPUFREQ_LEVEL_END] = {
-	825000,		/* 1.7 GHz */
-	825000,		/* 1.6 GHz */
-	825000,		/* 1.5 GHz */
-	728000,		/* 1.4 GHz */
+	1000000,		/* 1.7 GHz */
+	1000000,		/* 1.6 GHz */
+	1000000,		/* 1.5 GHz */
+	825000,		/* 1.4 GHz */
 	728000,		/* 1.3 GHz */
 	666000,		/* 1.2 GHz */
 	666000,		/* 1.1 GHz */
@@ -247,25 +247,15 @@ static void __init set_volt_table(void)
 
 		pr_info("CPUFREQ: L%d : %d uV\n", i,
 				exynos3475_volt_table[i]);
-	exynos3475_default_volt_table[i] = exynos3475_volt_table[i];
 	}
 
 	max_support_idx = L1;	/* 1.6GHz */
-	min_support_idx = L10;	/* 700mhz */
+	min_support_idx = L14;	/* 400mhz */
 	pr_info("CPUFREQ : max_freq : L%d %u khz\n", max_support_idx,
 		exynos3475_freq_table[max_support_idx].frequency);
 	pr_info("CPUFREQ : min_freq : L%d %u khz\n", min_support_idx,
 		exynos3475_freq_table[min_support_idx].frequency);
 }
-
-void exynos3475_restoreDefaultVolts(void)
-{
-	unsigned int i;
-	for (i = 0; i < CPUFREQ_LEVEL_END; i++) {
-		exynos3475_volt_table[i] = exynos3475_default_volt_table[i];
-	}
-}
-EXPORT_SYMBOL(exynos3475_restoreDefaultVolts);
 
 int __init exynos3475_cpufreq_init(struct exynos_dvfs_info *info)
 {
@@ -287,11 +277,11 @@ int __init exynos3475_cpufreq_init(struct exynos_dvfs_info *info)
 	rate = clk_get_rate(mout_mpll) / 1000;
 
 	info->mpll_freq_khz = rate;
-	info->pll_safe_idx = pll_safe_idx = L5;
+	info->pll_safe_idx = pll_safe_idx = L7;
 
 	info->max_support_idx = max_support_idx;
 	info->min_support_idx = min_support_idx;
-	info->suspend_freq = exynos3475_freq_table[L7].frequency;
+	info->suspend_freq = exynos3475_freq_table[L9].frequency;
 	info->cpu_clk = cpu_pll;
 	/* booting frequency is 1.2GHz ~ 1.3GHz */
 	info->boot_cpu_min_qos = exynos3475_freq_table[CONFIG_BOOTING_FREQ].frequency;

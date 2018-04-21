@@ -69,6 +69,8 @@
 #define dev_dbg dev_err
 #endif
 
+static void s2803x_cfg_gpio(struct device *dev, const char *name);
+
 enum s2803x_type {
 	SRC2803X,
 };
@@ -100,6 +102,7 @@ struct s2803x_priv {
 	unsigned short i2c_addr;
 	atomic_t is_cp_running;
 	atomic_t num_active_stream;
+	atomic_t use_count_bt;
 	struct pinctrl *pinctrl;
 	unsigned int *save_regs_val;
 	unsigned int aifrate;
@@ -460,11 +463,21 @@ void s2803x_startup(s2803x_if_t interface)
 	 * atomic_inc(&s2803x->is_cp_running) must not be changed.
 	 */
 
+
 #ifdef CONFIG_PM_RUNTIME
 	pm_runtime_get_sync(s2803x->dev);
 #endif
 
 	atomic_inc(&s2803x->num_active_stream);
+
+	if ((interface == S2803X_IF_BT) || (interface == S2803X_IF_CP))
+		atomic_inc(&s2803x->is_cp_running);
+
+	if (interface == S2803X_IF_BT) {
+		atomic_inc(&s2803x->use_count_bt);
+		if (atomic_read(&s2803x->use_count_bt) == 1)
+			s2803x_cfg_gpio(s2803x->dev, "default");
+	}
 }
 EXPORT_SYMBOL_GPL(s2803x_startup);
 
@@ -476,6 +489,15 @@ void s2803x_shutdown(s2803x_if_t interface)
 	dev_dbg(s2803x->dev, "aif%d: %s called\n", interface, __func__);
 
 	atomic_dec(&s2803x->num_active_stream);
+
+	if (interface == S2803X_IF_BT) {
+		atomic_dec(&s2803x->use_count_bt);
+		if (atomic_read(&s2803x->use_count_bt) == 0)
+			s2803x_cfg_gpio(s2803x->dev, "bt-idle");
+	}
+
+	if ((interface == S2803X_IF_BT) || (interface == S2803X_IF_CP))
+		atomic_dec(&s2803x->is_cp_running);
 
 #ifdef CONFIG_PM_RUNTIME
 	pm_runtime_put_sync(s2803x->dev);
@@ -499,6 +521,34 @@ bool is_cp_aud_enabled(void)
 		return false;
 }
 EXPORT_SYMBOL_GPL(is_cp_aud_enabled);
+
+void aud_mixer_MCLKO_enable(void)
+{
+	if (s2803x == NULL)
+		return;
+
+	atomic_inc(&s2803x->is_cp_running);
+
+#ifdef CONFIG_PM_RUNTIME
+	pm_runtime_get_sync(s2803x->dev);
+#endif
+
+}
+EXPORT_SYMBOL_GPL(aud_mixer_MCLKO_enable);
+
+void aud_mixer_MCLKO_disable(void)
+{
+	if (s2803x == NULL)
+		return;
+
+	atomic_dec(&s2803x->is_cp_running);
+
+#ifdef CONFIG_PM_RUNTIME
+	pm_runtime_put_sync(s2803x->dev);
+#endif
+
+}
+EXPORT_SYMBOL_GPL(aud_mixer_MCLKO_disable);
 
 /* thread run whenever the cp event received */
 static void s2803x_cp_notification_work(struct work_struct *work)
@@ -1589,6 +1639,7 @@ static int s2803x_probe(struct snd_soc_codec *codec)
 	/* Initilize default values */
 	atomic_set(&s2803x->is_cp_running, 0);
 	atomic_set(&s2803x->num_active_stream, 0);
+	atomic_set(&s2803x->use_count_bt, 0);
 	s2803x->aifrate = 0;
 
 	/* Set Clock for Mixer */
@@ -1605,6 +1656,14 @@ static int s2803x_probe(struct snd_soc_codec *codec)
 				S2803X_RPM_SUSPEND_DELAY_MS);
 	pm_runtime_get_sync(s2803x->dev);
 #endif
+
+	ret = clk_set_rate(s2803x->dout_audmixer, S2803X_SYS_CLK_FREQ_48KHZ);
+	if (ret != 0) {
+		dev_err(s2803x->dev,
+				"%s: Error setting mixer sysclk rate as %u\n",
+				__func__, S2803X_SYS_CLK_FREQ_48KHZ);
+		return ret;
+	}
 
 	if (update_fw)
 		exynos_regmap_update_fw(S2803X_FIRMWARE_NAME,
@@ -1758,13 +1817,12 @@ static int s2803x_runtime_resume(struct device *dev)
 	lpass_get_sync(dev);
 	s2803x_runtime_power_on(dev);
 	s2803x_clk_enable(dev);
-	s2803x_cfg_gpio(dev, "default");
+	s2803x_cfg_gpio(dev, "bt-idle");
 	/* Reset the codec */
 	s2803x_reset_sys_data();
 	/* set ap path by defaut*/
 	s2803x_init_mixer();
 	s2803x_restore_regs(dev);
-	atomic_inc(&s2803x->is_cp_running);
 	return 0;
 }
 
@@ -1774,7 +1832,6 @@ static int s2803x_runtime_suspend(struct device *dev)
 
 	dev_dbg(dev, "(*) %s (count = %d)\n", __func__, ++count);
 
-	atomic_dec(&s2803x->is_cp_running);
 	s2803x_save_regs(dev);
 	s2803x_cfg_gpio(dev, "idle");
 	s2803x_clk_disable(dev);

@@ -261,8 +261,10 @@ static void acc_complete_in(struct usb_ep *ep, struct usb_request *req)
 {
 	struct acc_dev *dev = _acc_dev;
 
-	if (req->status != 0)
+	if (req->status == -ESHUTDOWN) {
+		pr_debug("acc_complete_in set disconnected");
 		acc_set_disconnected(dev);
+	}
 
 	req_put(dev, &dev->tx_idle, req);
 
@@ -274,10 +276,19 @@ static void acc_complete_out(struct usb_ep *ep, struct usb_request *req)
 	struct acc_dev *dev = _acc_dev;
 
 	dev->rx_done = 1;
-	if (req->status != 0)
+	if (req->status == -ESHUTDOWN) {
+		pr_debug("acc_complete_out set disconnected");
 		acc_set_disconnected(dev);
+	}
 
 	wake_up(&dev->read_wq);
+}
+
+static void acc_ctrlrequest_complete(struct usb_ep *ep, struct usb_request *req)
+{
+	if (req->status != 0) {
+		pr_err("acc_ctrlrequest_complete, err %d\n", req->status);
+	}
 }
 
 static void acc_complete_set_string(struct usb_ep *ep, struct usb_request *req)
@@ -552,13 +563,16 @@ static ssize_t acc_read(struct file *fp, char __user *buf,
 {
 	struct acc_dev *dev = fp->private_data;
 	struct usb_request *req;
-	int r = count, xfer;
+	ssize_t r = count;
+	unsigned xfer;
 	int ret = 0;
 
-	pr_debug("acc_read(%d)\n", count);
+	pr_debug("acc_read(%zu)\n", count);
 
-	if (dev->disconnected)
+	if (dev->disconnected) {
+		pr_debug("acc_read disconnected");
 		return -ENODEV;
+	}
 
 	if (count > BULK_BUFFER_SIZE)
 		count = BULK_BUFFER_SIZE;
@@ -569,6 +583,12 @@ static ssize_t acc_read(struct file *fp, char __user *buf,
 	if (ret < 0) {
 		r = ret;
 		goto done;
+	}
+
+	if (dev->rx_done) {
+		// last req cancelled. try to get it.
+		req = dev->rx_req[0];
+		goto copy_data;
 	}
 
 requeue_req:
@@ -588,15 +608,23 @@ requeue_req:
 	ret = wait_event_interruptible(dev->read_wq, dev->rx_done);
 	if (ret < 0) {
 		r = ret;
-		usb_ep_dequeue(dev->ep_out, req);
+		ret = usb_ep_dequeue(dev->ep_out, req);
+		if (ret != 0) {
+			// cancel failed. There can be a data already received.
+			// it will be retrieved in the next read.
+			pr_debug("acc_read: cancelling failed %d", ret);
+		}
 		goto done;
 	}
+
+copy_data:
+	dev->rx_done = 0;
 	if (dev->online) {
 		/* If we got a 0-len packet, throw it back and try again. */
 		if (req->actual == 0)
 			goto requeue_req;
 
-		pr_debug("rx %p %d\n", req, req->actual);
+		pr_debug("rx %p %u\n", req, req->actual);
 		xfer = (req->actual < count) ? req->actual : count;
 		r = xfer;
 		if (copy_to_user(buf, req->buf, xfer))
@@ -605,7 +633,7 @@ requeue_req:
 		r = -EIO;
 
 done:
-	pr_debug("acc_read returning %d\n", r);
+	pr_debug("acc_read returning %zd\n", r);
 	return r;
 }
 
@@ -614,13 +642,16 @@ static ssize_t acc_write(struct file *fp, const char __user *buf,
 {
 	struct acc_dev *dev = fp->private_data;
 	struct usb_request *req = 0;
-	int r = count, xfer;
+	ssize_t r = count;
+	unsigned xfer;
 	int ret;
 
-	pr_debug("acc_write(%d)\n", count);
+	pr_debug("acc_write(%zu)\n", count);
 
-	if (!dev->online || dev->disconnected)
+	if (!dev->online || dev->disconnected) {
+		pr_debug("acc_write disconnected or not online");
 		return -ENODEV;
+	}
 
 	while (count > 0) {
 		if (!dev->online) {
@@ -638,10 +669,17 @@ static ssize_t acc_write(struct file *fp, const char __user *buf,
 			break;
 		}
 
-		if (count > BULK_BUFFER_SIZE)
+		if (count > BULK_BUFFER_SIZE) {
 			xfer = BULK_BUFFER_SIZE;
-		else
+			/* ZLP, They will be more TX requests so not yet. */
+			req->zero = 0;
+		} else {
 			xfer = count;
+			/* If the data length is a multple of the
+			 * maxpacket size then send a zero length packet(ZLP).
+			*/
+			req->zero = ((xfer % dev->ep_in->maxpacket) == 0);
+		}
 		if (copy_from_user(req->buf, buf, xfer)) {
 			r = -EFAULT;
 			break;
@@ -665,7 +703,7 @@ static ssize_t acc_write(struct file *fp, const char __user *buf,
 	if (req)
 		req_put(dev, &dev->tx_idle, req);
 
-	pr_debug("acc_write returning %d\n", r);
+	pr_debug("acc_write returning %zd\n", r);
 	return r;
 }
 
@@ -710,10 +748,12 @@ static long acc_ioctl(struct file *fp, unsigned code, unsigned long value)
 
 static int acc_open(struct inode *ip, struct file *fp)
 {
-	printk(KERN_INFO "acc_open\n");
 	if (atomic_xchg(&_acc_dev->open_excl, 1))
+	{
+		printk(KERN_INFO "usb: acc_open_EBUSY\n");
 		return -EBUSY;
-
+	}
+	printk(KERN_INFO "usb: acc_open\n");
 	_acc_dev->disconnected = 0;
 	fp->private_data = _acc_dev;
 	return 0;
@@ -728,12 +768,24 @@ static int acc_release(struct inode *ip, struct file *fp)
 	return 0;
 }
 
+/* for 64bit kernel & 32bit platform */
+#ifdef CONFIG_COMPAT
+static long acc_compat_ioctl(struct file *file,
+		unsigned int cmd, unsigned long arg)
+{
+	return acc_ioctl(file, cmd, (unsigned long)compat_ptr(arg));
+}
+#endif
+
 /* file operations for /dev/usb_accessory */
 static const struct file_operations acc_fops = {
 	.owner = THIS_MODULE,
 	.read = acc_read,
 	.write = acc_write,
 	.unlocked_ioctl = acc_ioctl,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl =   acc_compat_ioctl,
+#endif
 	.open = acc_open,
 	.release = acc_release,
 };
@@ -786,6 +838,7 @@ static int acc_ctrlrequest(struct usb_composite_dev *cdev,
 			b_requestType, b_request,
 			w_value, w_index, w_length);
 */
+	cdev->req->complete = acc_ctrlrequest_complete;
 
 	if (b_requestType == (USB_DIR_OUT | USB_TYPE_VENDOR)) {
 		if (b_request == ACCESSORY_START) {
@@ -962,6 +1015,7 @@ static void acc_start_work(struct work_struct *data)
 {
 	char *envp[2] = { "ACCESSORY=START", NULL };
 	kobject_uevent_env(&acc_device.this_device->kobj, KOBJ_CHANGE, envp);
+	printk("usb: accessory start work\n");
 }
 
 static int acc_hid_init(struct acc_hid_dev *hdev)

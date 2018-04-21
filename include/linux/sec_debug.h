@@ -72,4 +72,14 @@ enum sec_debug_upload_cause_t {
 	UPLOAD_CAUSE_HSIC_DISCONNECTED	= 0x000000DD,
 };
 
+#if defined(CONFIG_SEC_INITCALL_DEBUG)
+#define SEC_INITCALL_DEBUG_MIN_TIME	10000
+#define SEC_INITCALL_SLEEP_DEBUG_MIN_TIME	5
+
+extern void sec_initcall_debug_add(initcall_t fn,
+	unsigned long long duration);
+extern void sec_initcall_debug_sleep_add(const char *name,
+	const char *info, unsigned long long duration);
+#endif
+
 #endif /* SEC_DEBUG_H */

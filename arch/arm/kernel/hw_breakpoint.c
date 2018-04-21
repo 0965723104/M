@@ -57,6 +57,16 @@ static bool has_ossr;
 /* Maximum supported watchpoint length. */
 static u8 max_watchpoint_len;
 
+#ifdef CONFIG_SKIP_HW_BREAKPOINT
+static int skip_hw_breakpoint;
+static int __init skip_hw_breakpoint_func(char *str)
+{
+        get_option(&str, &skip_hw_breakpoint);
+        return 0;
+}
+early_param("hw_breakpoint", skip_hw_breakpoint_func);
+#endif
+
 #define READ_WB_REG_CASE(OP2, M, VAL)			\
 	case ((OP2 << 4) + M):				\
 		ARM_DBG_READ(c0, c ## M, OP2, VAL);	\
@@ -1059,58 +1069,17 @@ static inline void pm_init(void)
 
 static int __init arch_hw_breakpoint_init(void)
 {
+#if defined(CONFIG_SKIP_HW_BREAKPOINT)
+	if (skip_hw_breakpoint) {
+		pr_info("skip arch_hw_breakpoint init\n");
+		return 0;
+	}
+#endif
+
 	debug_arch = get_debug_arch();
 
 	if (!debug_arch_supported()) {
 		pr_info("debug architecture 0x%x unsupported.\n", debug_arch);
-		return 0;
-	}
-
-	/*
-	 * Scorpion CPUs (at least those in APQ8060) seem to set DBGPRSR.SPD
-	 * whenever a WFI is issued, even if the core is not powered down, in
-	 * violation of the architecture.  When DBGPRSR.SPD is set, accesses to
-	 * breakpoint and watchpoint registers are treated as undefined, so
-	 * this results in boot time and runtime failures when these are
-	 * accessed and we unexpectedly take a trap.
-	 *
-	 * It's not clear if/how this can be worked around, so we blacklist
-	 * Scorpion CPUs to avoid these issues.
-	*/
-	if ((read_cpuid_id() & 0xff00fff0) == ARM_CPU_PART_SCORPION) {
-		pr_info("Scorpion CPU detected. Hardware breakpoints and watchpoints disabled\n");
-		return 0;
-	}
-
-	/*
-	 * Scorpion CPUs (at least those in APQ8060) seem to set DBGPRSR.SPD
-	 * whenever a WFI is issued, even if the core is not powered down, in
-	 * violation of the architecture.  When DBGPRSR.SPD is set, accesses to
-	 * breakpoint and watchpoint registers are treated as undefined, so
-	 * this results in boot time and runtime failures when these are
-	 * accessed and we unexpectedly take a trap.
-	 *
-	 * It's not clear if/how this can be worked around, so we blacklist
-	 * Scorpion CPUs to avoid these issues.
-	*/
-	if ((read_cpuid_id() & 0xff00fff0) == ARM_CPU_PART_SCORPION) {
-		pr_info("Scorpion CPU detected. Hardware breakpoints and watchpoints disabled\n");
-		return 0;
-	}
-
-	/*
-	 * Scorpion CPUs (at least those in APQ8060) seem to set DBGPRSR.SPD
-	 * whenever a WFI is issued, even if the core is not powered down, in
-	 * violation of the architecture.  When DBGPRSR.SPD is set, accesses to
-	 * breakpoint and watchpoint registers are treated as undefined, so
-	 * this results in boot time and runtime failures when these are
-	 * accessed and we unexpectedly take a trap.
-	 *
-	 * It's not clear if/how this can be worked around, so we blacklist
-	 * Scorpion CPUs to avoid these issues.
-	*/
-	if ((read_cpuid_id() & 0xff00fff0) == ARM_CPU_PART_SCORPION) {
-		pr_info("Scorpion CPU detected. Hardware breakpoints and watchpoints disabled\n");
 		return 0;
 	}
 

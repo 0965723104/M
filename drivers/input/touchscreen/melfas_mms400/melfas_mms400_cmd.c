@@ -607,19 +607,53 @@ static void cmd_get_cm_delta(void *device_data)
 	struct mms_ts_info *info = (struct mms_ts_info *)device_data;
 	char buf[64] = { 0 };
 
-	int x = info->cmd_param[0];
-	int y = info->cmd_param[1];
+	int tsp_x = info->cmd_param[0];
+	int tsp_y = info->cmd_param[1];
+
+	int tsp_x_num = info->node_x;
+	int tsp_y_num = info->node_y;
 	int idx = 0;
 
 	cmd_clear_result(info);
 
-	if ((x < 0) || (x >= info->node_x) || (y < 0) || (y >= info->node_y)) {
+	tsp_debug_info(true, &info->client->dev,"mms : x num = %d, y num = %d, node_x = %d, node_y = %d\n",tsp_x,tsp_y,tsp_x_num,tsp_y_num);
+	if((tsp_x < 0) || (tsp_x >= tsp_x_num) || (tsp_y < 0) || (tsp_y >= tsp_y_num)){
 		sprintf(buf, "%s", "NG");
 		info->cmd_state = CMD_STATUS_FAIL;
 		goto EXIT;
 	}
 
-	idx = y * info->node_x + x;
+	idx = (tsp_x_num * tsp_y) + tsp_x;
+
+	sprintf(buf, "%d", info->image_buf[idx]);
+	info->cmd_state = CMD_STATUS_OK;
+
+EXIT:
+	cmd_set_result(info, buf, strnlen(buf, sizeof(buf)));
+	tsp_debug_dbg(true, &info->client->dev, "%s - cmd[%s] state[%d]\n",
+		__func__, buf, info->cmd_state);
+}
+
+/**
+* Command : Get result of cm delta test (key)
+*/
+static void cmd_get_cm_delta_key(void *device_data)
+{
+	struct mms_ts_info *info = (struct mms_ts_info *)device_data;
+	char buf[64] = { 0 };
+
+	int key_idx = info->cmd_param[0];
+	int idx = 0;
+
+	cmd_clear_result(info);
+
+	if((key_idx < 0) || (key_idx >= info->key_num)){
+		sprintf(buf, "%s", "NG");
+		info->cmd_state = CMD_STATUS_FAIL;
+		goto EXIT;
+	}
+
+	idx = info->node_x * info->node_y + key_idx;
 
 	sprintf(buf, "%d", info->image_buf[idx]);
 	info->cmd_state = CMD_STATUS_OK;
@@ -676,19 +710,53 @@ static void cmd_get_cm_abs(void *device_data)
 	struct mms_ts_info *info = (struct mms_ts_info *)device_data;
 	char buf[64] = { 0 };
 
-	int x = info->cmd_param[0];
-	int y = info->cmd_param[1];
+	int tsp_x = info->cmd_param[0];
+	int tsp_y = info->cmd_param[1];
+
+	int tsp_x_num = info->node_x;
+	int tsp_y_num = info->node_y;
 	int idx = 0;
 
 	cmd_clear_result(info);
 
-	if ((x < 0) || (x >= info->node_x) || (y < 0) || (y >= info->node_y)) {
+	tsp_debug_info(true, &info->client->dev,"mms : x num = %d, y num = %d, node_x = %d, node_y = %d\n",tsp_x,tsp_y,tsp_x_num,tsp_y_num);
+	if((tsp_x < 0) || (tsp_x >= tsp_x_num) || (tsp_y < 0) || (tsp_y >= tsp_y_num)){
 		sprintf(buf, "%s", "NG");
 		info->cmd_state = CMD_STATUS_FAIL;
 		goto EXIT;
 	}
 
-	idx = y * info->node_x + x;
+	idx = (tsp_x_num * tsp_y) + tsp_x;
+
+	sprintf(buf, "%d", info->image_buf[idx]);
+	info->cmd_state = CMD_STATUS_OK;
+
+EXIT:
+	cmd_set_result(info, buf, strnlen(buf, sizeof(buf)));
+	tsp_debug_dbg(true, &info->client->dev, "%s - cmd[%s] state[%d]\n",
+		__func__, buf, info->cmd_state);
+}
+
+/**
+* Command : Get result of cm abs test (key)
+*/
+static void cmd_get_cm_abs_key(void *device_data)
+{
+	struct mms_ts_info *info = (struct mms_ts_info *)device_data;
+	char buf[64] = { 0 };
+
+	int key_idx = info->cmd_param[0];
+	int idx = 0;
+
+	cmd_clear_result(info);
+
+	if((key_idx < 0) || (key_idx >= info->key_num)){
+		sprintf(buf, "%s", "NG");
+		info->cmd_state = CMD_STATUS_FAIL;
+		goto EXIT;
+	}
+
+	idx = info->node_x * info->node_y + key_idx;
 
 	sprintf(buf, "%d", info->image_buf[idx]);
 	info->cmd_state = CMD_STATUS_OK;
@@ -956,6 +1024,10 @@ static struct mms_cmd mms_commands[] = {
 	{MMS_CMD("get_rawdata_all_data", get_rawdata_all_data),},
 	{MMS_CMD("get_cm_delta_all_data", get_cm_delta_all_data),},
 	{MMS_CMD("get_cm_abs_all_data", get_cm_abs_all_data),},
+	{MMS_CMD("run_cm_delta_read_tsk", cmd_run_test_cm_delta),},
+	{MMS_CMD("get_cm_delta_tsk", cmd_get_cm_delta_key),},
+	{MMS_CMD("run_cm_abs_read_tsk", cmd_run_test_cm_abs),},
+	{MMS_CMD("get_cm_abs_tsk", cmd_get_cm_abs_key),},
 	{MMS_CMD("dead_zone_enable", dead_zone_enable),},
 	{MMS_CMD("module_off_slave", cmd_unknown_cmd),},
 	{MMS_CMD("module_on_slave", cmd_unknown_cmd),},

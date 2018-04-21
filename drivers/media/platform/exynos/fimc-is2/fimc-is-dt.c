@@ -176,6 +176,10 @@ static int parse_dvfs_data(struct exynos_platform_fimc_is *pdata, struct device_
 	DT_READ_U32(np, "front_preview_cam", pdata->dvfs_data[index][FIMC_IS_SN_FRONT_PREVIEW][FIMC_IS_DVFS_CAM]);
 	DT_READ_U32(np, "front_preview_mif", pdata->dvfs_data[index][FIMC_IS_SN_FRONT_PREVIEW][FIMC_IS_DVFS_MIF]);
 	DT_READ_U32(np, "front_preview_i2c", pdata->dvfs_data[index][FIMC_IS_SN_FRONT_PREVIEW][FIMC_IS_DVFS_I2C]);
+	DT_READ_U32(np, "front_preview_binning_int", pdata->dvfs_data[index][FIMC_IS_SN_FRONT_PREVIEW_BINNING][FIMC_IS_DVFS_INT]);
+	DT_READ_U32(np, "front_preview_binning_cam", pdata->dvfs_data[index][FIMC_IS_SN_FRONT_PREVIEW_BINNING][FIMC_IS_DVFS_CAM]);
+	DT_READ_U32(np, "front_preview_binning_mif", pdata->dvfs_data[index][FIMC_IS_SN_FRONT_PREVIEW_BINNING][FIMC_IS_DVFS_MIF]);
+	DT_READ_U32(np, "front_preview_binning_i2c", pdata->dvfs_data[index][FIMC_IS_SN_FRONT_PREVIEW_BINNING][FIMC_IS_DVFS_I2C]);
 	DT_READ_U32(np, "front_capture_int", pdata->dvfs_data[index][FIMC_IS_SN_FRONT_CAPTURE][FIMC_IS_DVFS_INT]);
 	DT_READ_U32(np, "front_capture_cam", pdata->dvfs_data[index][FIMC_IS_SN_FRONT_CAPTURE][FIMC_IS_DVFS_CAM]);
 	DT_READ_U32(np, "front_capture_mif", pdata->dvfs_data[index][FIMC_IS_SN_FRONT_CAPTURE][FIMC_IS_DVFS_MIF]);
@@ -240,6 +244,10 @@ static int parse_dvfs_data(struct exynos_platform_fimc_is *pdata, struct device_
 	DT_READ_U32(np, "rear_preview_uhd_cam", pdata->dvfs_data[index][FIMC_IS_SN_REAR_PREVIEW_UHD][FIMC_IS_DVFS_CAM]);
 	DT_READ_U32(np, "rear_preview_uhd_mif", pdata->dvfs_data[index][FIMC_IS_SN_REAR_PREVIEW_UHD][FIMC_IS_DVFS_MIF]);
 	DT_READ_U32(np, "rear_preview_uhd_i2c", pdata->dvfs_data[index][FIMC_IS_SN_REAR_PREVIEW_UHD][FIMC_IS_DVFS_I2C]);
+	DT_READ_U32(np, "rear_preview_binning_int", pdata->dvfs_data[index][FIMC_IS_SN_REAR_PREVIEW_BINNING][FIMC_IS_DVFS_INT]);
+	DT_READ_U32(np, "rear_preview_binning_cam", pdata->dvfs_data[index][FIMC_IS_SN_REAR_PREVIEW_BINNING][FIMC_IS_DVFS_CAM]);
+	DT_READ_U32(np, "rear_preview_binning_mif", pdata->dvfs_data[index][FIMC_IS_SN_REAR_PREVIEW_BINNING][FIMC_IS_DVFS_MIF]);
+	DT_READ_U32(np, "rear_preview_binning_i2c", pdata->dvfs_data[index][FIMC_IS_SN_REAR_PREVIEW_BINNING][FIMC_IS_DVFS_I2C]);
 	DT_READ_U32(np, "rear_capture_int", pdata->dvfs_data[index][FIMC_IS_SN_REAR_CAPTURE][FIMC_IS_DVFS_INT]);
 	DT_READ_U32(np, "rear_capture_cam", pdata->dvfs_data[index][FIMC_IS_SN_REAR_CAPTURE][FIMC_IS_DVFS_CAM]);
 	DT_READ_U32(np, "rear_capture_mif", pdata->dvfs_data[index][FIMC_IS_SN_REAR_CAPTURE][FIMC_IS_DVFS_MIF]);
@@ -761,6 +769,7 @@ static int exynos_fimc_is_module_soc_pin_control(struct i2c_client *client,
 				pr_err("pinctrl_select_state(%s) is fail(%d)\n", name, ret);
 				return ret;
 			}
+			usleep_range(delay, delay);
 		}
 		break;
 	case PIN_REGULATOR:
@@ -1093,7 +1102,6 @@ int fimc_is_sensor_module_soc_parse_dt(struct i2c_client *client,
 	return ret;
 
 p_err:
-	kfree(pdata);
 	return ret;
 }
 #endif /*CONFIG_CAMERA_USE_SOC_SENSOR*/

@@ -179,6 +179,7 @@ static inline unsigned int r2h_bits(int cmd)
 
 #define S5P_FIMV_D_SEI_ENABLE			0xF0C4
 #define S5P_FIMV_D_SEI_NEED_INIT_BUFFER_SHIFT	1
+#define S5P_FIMV_D_SEI_RECOVERY_PARSING_ENABLE	2
 
 /* Buffer setting registers */
 /* Session return */
@@ -613,6 +614,7 @@ static inline unsigned int r2h_bits(int cmd)
 #define S5P_FIMV_NEW_RC_QP_BOUND		S5P_FIMV_E_RC_QP_BOUND
 
 #define S5P_FIMV_ERR_FRAME_CONCEAL		150
+#define S5P_FIMV_ERR_NON_PAIRED_FIELD		191
 
 #define S5P_FIMV_VPS_ONLY_ERROR		42
 #define S5P_FIMV_SW_RESET		0x0000

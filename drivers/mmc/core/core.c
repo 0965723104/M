@@ -61,7 +61,7 @@
 #define MMC_BKOPS_MAX_TIMEOUT	(4 * 60 * 1000) /* max time to wait in ms */
 
 static struct workqueue_struct *workqueue;
-static const unsigned freqs[] = { 400000 };
+static const unsigned freqs[] = { 400000, 300000 };
 
 /*
  * Enabling software CRCs on the data blocks can be a significant (30%)
@@ -69,7 +69,7 @@ static const unsigned freqs[] = { 400000 };
  * So we allow it it to be disabled.
  */
 bool use_spi_crc = 0;
-module_param(use_spi_crc, bool, 0644);
+module_param(use_spi_crc, bool, 0);
 
 /*
  * We normally treat cards as removed during suspend if they are not
@@ -1133,11 +1133,11 @@ void mmc_set_data_timeout(struct mmc_data *data, const struct mmc_card *card)
 	/*
 	 * Some cards require longer data read timeout than indicated in CSD.
 	 * Address this by setting the read timeout to a "reasonably high"
-	 * value. For the cards tested, 600ms has proven enough. If necessary,
+	 * value. For the cards tested, 300ms has proven enough. If necessary,
 	 * this value can be increased if other problematic cards require this.
 	 */
 	if (mmc_card_long_read_time(card) && data->flags & MMC_DATA_READ) {
-		data->timeout_ns = 600000000;
+		data->timeout_ns = 300000000;
 		data->timeout_clks = 0;
 	}
 

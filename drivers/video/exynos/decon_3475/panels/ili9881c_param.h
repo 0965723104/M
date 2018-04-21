@@ -159,8 +159,9 @@ static const struct mipi_cmd SEQ_CMD_TABLE_3[] = {
 static const struct mipi_cmd SEQ_CMD_TABLE_4[] = {
 	{{0x6C, 0x15}},
 	{{0x6E, 0x2B}},
-	{{0x6F, 0x32}},
+	{{0x6F, 0x33}},
 	{{0x3A, 0x94}},
+	{{0x3B, 0x9F}},
 	{{0x8D, 0x19}},
 	{{0x87, 0xBA}},
 	{{0x26, 0x76}},
@@ -173,6 +174,7 @@ static const struct mipi_cmd SEQ_CMD_TABLE_4[] = {
 static const struct mipi_cmd SEQ_CMD_TABLE_1[] = {
 	{{0x22, 0x09}},
 	{{0x31, 0x00}},
+	{{0x42, 0x22}},
 	{{0x50, 0xB7}},
 	{{0x51, 0xB7}},
 	{{0x60, 0x22}},
@@ -258,7 +260,7 @@ static const unsigned char SEQ_IE_LOW[] = {
 
 static const unsigned char SEQ_BR_OPEN[] = {
 	0x53,
-	0x2C,
+	0x24,
 };
 
 static const unsigned char SEQ_BR_TR_TIME[] = {

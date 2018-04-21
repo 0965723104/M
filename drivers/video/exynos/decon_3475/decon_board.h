@@ -13,5 +13,6 @@
 #include <linux/device.h>
 
 void run_list(struct device *dev, const char *name);
+extern unsigned int lcdtype;
 
 #endif

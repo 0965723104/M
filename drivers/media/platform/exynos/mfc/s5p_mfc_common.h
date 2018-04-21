@@ -55,7 +55,11 @@
 /* Watchdog interval */
 #define MFC_WATCHDOG_INTERVAL   1000
 /* After how many executions watchdog should assume lock up */
+#if (defined(CONFIG_SOC_EXYNOS7580) || defined(CONFIG_SOC_EXYNOS3475))
+#define MFC_WATCHDOG_CNT        5
+#else
 #define MFC_WATCHDOG_CNT        3
+#endif
 
 #define MFC_NO_INSTANCE_SET	-1
 

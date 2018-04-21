@@ -284,7 +284,28 @@ int fimc_is_lib_isp_set_param(struct fimc_is_hw_ip *hw_ip,
 	struct fimc_is_lib_isp *this,
 	void *param)
 {
-	return 0;
+	int ret;
+
+	switch (hw_ip->id) {
+	case DEV_HW_3AA0:
+	case DEV_HW_3AA1:
+		ret = this->func->set_param(this->object, param);
+		if (ret)
+			err_lib("3aa set_param fail (%d)", hw_ip->id);
+		break;
+	case DEV_HW_ISP0:
+	case DEV_HW_ISP1:
+		ret = this->func->set_param(this->object, param);
+		if (ret)
+			err_lib("isp set_param fail (%d)", hw_ip->id);
+		break;
+	default:
+		ret = -EINVAL;
+		err_lib("invalid hw (%d)", hw_ip->id);
+		break;
+	}
+
+	return ret;
 }
 
 int fimc_is_lib_isp_set_ctrl(struct fimc_is_hw_ip *hw_ip,

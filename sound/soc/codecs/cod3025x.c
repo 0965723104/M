@@ -58,11 +58,24 @@
 #define dev_dbg dev_err
 #endif
 
+struct cod3025x_priv *g_cod3025x;
+
 /* Forward Declarations */
 static void cod3025x_save_otp_registers(struct snd_soc_codec *codec);
 static void cod3025x_restore_otp_registers(struct snd_soc_codec *codec);
 static void cod3025x_reset_io_selector_bits(struct snd_soc_codec *codec);
 static void cod3025x_configure_mic_bias(struct snd_soc_codec *codec);
+
+#ifdef CONFIG_SND_RF_REF_RCV_STATE
+static void cod3x25x_rf_rcv_state(struct cod3025x_priv *cod3025x, bool state)
+{
+	if(cod3025x->rcv_state_gpio > 0)
+	{
+		gpio_set_value(cod3025x->rcv_state_gpio, state);
+		dev_info(cod3025x->dev, "rcv_state_gpio : %d\n", state);
+	}
+}
+#endif
 
 static inline void cod3025x_usleep(unsigned int u_sec)
 {
@@ -390,6 +403,31 @@ static const struct soc_enum cod3025x_chargepump_mode_enum =
 			ARRAY_SIZE(cod3025x_chargepump_mode_text),
 			cod3025x_chargepump_mode_text);
 
+static int dac_soft_mute_get(struct snd_kcontrol *kcontrol,
+	struct snd_ctl_elem_value *ucontrol)
+{
+	return 0;
+}
+
+static int dac_soft_mute_put(struct snd_kcontrol *kcontrol,
+	struct snd_ctl_elem_value *ucontrol)
+{
+	struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
+	int value =ucontrol->value.integer.value[0];
+
+	if (!value)
+		/* enable soft mute */
+		snd_soc_update_bits(codec, COD3025X_50_DAC1,
+			DAC1_SOFT_MUTE_MASK, DAC1_SOFT_MUTE_MASK);
+	else
+		/* diable soft mute */
+		snd_soc_update_bits(codec, COD3025X_50_DAC1,
+			DAC1_SOFT_MUTE_MASK, 0x0);
+
+	dev_info(codec->dev, "%s: soft mute : %s\n", __func__,
+		(!value) ? "on":"off");
+	return 0;
+}
 
 /**
  * struct snd_kcontrol_new cod3025x_snd_control
@@ -488,6 +526,9 @@ static const struct snd_kcontrol_new cod3025x_snd_controls[] = {
 	SOC_ENUM("MonoMix Mode", cod3025x_mono_mix_mode_enum),
 
 	SOC_ENUM("Chargepump Mode", cod3025x_chargepump_mode_enum),
+
+ 	SOC_SINGLE_EXT("DAC Soft Mute",SND_SOC_NOPM, 0, 100, 0,
+ 			dac_soft_mute_get, dac_soft_mute_put),
 };
 
 static int dac_ev(struct snd_soc_dapm_widget *w, struct snd_kcontrol *kcontrol,
@@ -587,6 +628,48 @@ static void cod3025x_adc_digital_mute(struct snd_soc_codec *codec, bool on)
 				ADC1_MUTE_AD_EN_MASK, 0);
 }
 
+/**
+ * cod3025x_mute_mic2
+ * Mute mic2 if it is active
+ *
+ * Returns -1 if error, else 0
+ */
+static int cod3025x_mute_mic2(bool on)
+{
+	int mic_on;
+
+	if (g_cod3025x == NULL)
+		return -1;
+
+	mic_on = snd_soc_read(g_cod3025x->codec, COD3025X_75_CHOP_AD);
+
+	/* Check mic2 active, if mic2 is not active return */
+	if (!(mic_on & EN_MCB2_CHOP_MASK))
+		return 0;
+
+	dev_dbg(g_cod3025x->codec->dev, "%s called, %s\n", __func__,
+			on ? "Mute" : "Unmute");
+
+	if (on) {
+		cod3025x_adc_digital_mute(g_cod3025x->codec, true);
+		snd_soc_update_bits(g_cod3025x->codec, COD3025X_12_PD_AD2,
+							PDB_MIC2_MASK, 0);
+	} else {
+		snd_soc_update_bits(g_cod3025x->codec, COD3025X_12_PD_AD2,
+					PDB_MIC2_MASK, PDB_MIC2_MASK);
+		cod3025x_adc_digital_mute(g_cod3025x->codec, false);
+	}
+
+	return 0;
+}
+
+/* process the button events based on the need */
+void cod3025x_process_button_ev(int code, int on)
+{
+	bool key_press = on ? true : false;
+
+	cod3025x_mute_mic2(key_press);
+}
 static int cod3025_power_on_mic1(struct snd_soc_codec *codec)
 {
 	unsigned int mix_val;
@@ -629,6 +712,7 @@ static int cod3025_power_on_mic1(struct snd_soc_codec *codec)
 static int cod3025_power_on_mic2(struct snd_soc_codec *codec)
 {
 	unsigned int mix_val;
+	struct cod3025x_priv *cod3025x = snd_soc_codec_get_drvdata(codec);
 
 	dev_info(codec->dev, "%s called\n", __func__);
 
@@ -662,10 +746,11 @@ static int cod3025_power_on_mic2(struct snd_soc_codec *codec)
 	/* 140 ms delay recommended by MSC Team */
 	msleep(140);
 
-	/* mic bias2 high quality setting */
-	snd_soc_update_bits(codec, COD3025X_18_CTRL_REF,
-			CTRM_MCB2_MASK, CTRM_MCB2_MASK);
-
+	if (cod3025x->mic_bias2_highquality == false) {
+		/* mic bias2 high quality setting */
+		snd_soc_update_bits(codec, COD3025X_18_CTRL_REF,
+				CTRM_MCB2_MASK, CTRM_MCB2_MASK);
+	}
 	cod3025x_adc_digital_mute(codec, false);
 
 	return 0;
@@ -694,13 +779,16 @@ static int cod3025_power_off_mic1(struct snd_soc_codec *codec)
 
 static int cod3025_power_off_mic2(struct snd_soc_codec *codec)
 {
+	struct cod3025x_priv *cod3025x = snd_soc_codec_get_drvdata(codec);
 	dev_dbg(codec->dev, "%s called\n", __func__);
 
 	cod3025x_adc_digital_mute(codec, true);
 
-	/* mic bias2 low quality setting */
-	snd_soc_update_bits(codec, COD3025X_18_CTRL_REF,
-			CTRM_MCB2_MASK, 0);
+	if (cod3025x->mic_bias2_highquality == false) {
+		/* mic bias2 low quality setting */
+		snd_soc_update_bits(codec, COD3025X_18_CTRL_REF,
+				CTRM_MCB2_MASK, 0);
+	}
 
 	snd_soc_update_bits(codec, COD3025X_23_MIX_AD,
 			EN_MIX_MIC2L_MASK | EN_MIX_MIC2R_MASK, 0);
@@ -878,7 +966,7 @@ static int cod3025x_hp_playback_init(struct snd_soc_codec *codec)
 	if ((mcq_on & MQS_MODE_MASK) == MQS_MODE_MASK)
 		ctrl_hps |= (CTMI_HP_4_UA << CTMI_HP_A_SHIFT);
 	else
-		ctrl_hps |= (CTMI_HP_2_UA << CTMI_HP_A_SHIFT);
+		ctrl_hps |= (CTMI_HP_3_UA << CTMI_HP_A_SHIFT);
 
 	snd_soc_write(codec, COD3025X_DB_CTRL_HPS, ctrl_hps);
 	cod3025x_usleep(100);
@@ -891,6 +979,14 @@ static int cod3025x_hp_playback_init(struct snd_soc_codec *codec)
 
 	/* Set DNC Start gain value*/
 	snd_soc_write(codec, COD3025X_5A_DNC7, 0x18);
+	
+	snd_soc_update_bits(codec, COD3025X_54_DNC1,
+				EN_DNC_MASK, EN_DNC_MASK);
+
+	cod3025x_usleep(100);
+
+	snd_soc_update_bits(codec, COD3025X_54_DNC1,
+					EN_DNC_MASK, 0);
 
 	/* set HP volume Level */
 	snd_soc_write(codec, COD3025X_30_VOL_HPL, 0x26);
@@ -1165,7 +1261,7 @@ static int hpdrv_ev(struct snd_soc_dapm_widget *w,
 		/* set to default HP current value */
 		ctrl_hps = snd_soc_read(w->codec, COD3025X_DB_CTRL_HPS);
 		ctrl_hps &= ~CTMI_HP_A_MASK;
-		ctrl_hps |= (CTMI_HP_2_UA << CTMI_HP_A_SHIFT);
+		ctrl_hps |= (CTMI_HP_3_UA << CTMI_HP_A_SHIFT);
 		snd_soc_write(w->codec, COD3025X_DB_CTRL_HPS, ctrl_hps);
 
 		/* diable soft mute */
@@ -1184,6 +1280,7 @@ static int epdrv_ev(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
 	unsigned int ep_on;
+	struct cod3025x_priv *cod3025x = snd_soc_codec_get_drvdata(w->codec);
 
 	ep_on = snd_soc_read(w->codec, COD3025X_76_CHOP_DA);
 	if (!(ep_on & EN_EP_CHOP_MASK)) {
@@ -1195,6 +1292,9 @@ static int epdrv_ev(struct snd_soc_dapm_widget *w,
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
+#ifdef CONFIG_SND_RF_REF_RCV_STATE
+		cod3x25x_rf_rcv_state(cod3025x,false);
+#endif
 		/* Update OTP configuration */
 		cod3025x_update_playback_otp(w->codec);
 		/* enable soft mute */
@@ -1215,14 +1315,36 @@ static int epdrv_ev(struct snd_soc_dapm_widget *w,
 					PDB_IGEN_MASK, PDB_IGEN_MASK);
 
 		snd_soc_update_bits(w->codec, COD3025X_13_PD_DA1,
-					PDB_DCTL_MASK, PDB_DCTL_MASK);
+					PDB_DCTL_MASK | PDB_DCTR_MASK,
+					PDB_DCTL_MASK | PDB_DCTR_MASK);
 
 		snd_soc_update_bits(w->codec, COD3025X_13_PD_DA1,
 					EN_DCTL_PREQ_MASK |
 					EN_DCTR_PREQ_MASK, 0);
 
 		snd_soc_update_bits(w->codec, COD3025X_13_PD_DA1,
-					RESETB_DCTL_MASK, RESETB_DCTL_MASK);
+					RESETB_DCTL_MASK | RESETB_DCTR_MASK,
+					RESETB_DCTL_MASK | RESETB_DCTR_MASK);
+ 
+		snd_soc_update_bits(w->codec, COD3025X_DC_CTRL_EPS,
+					CTMI_EP_A_MASK, CTMI_EP_A_MASK);
+
+		snd_soc_update_bits(w->codec, COD3025X_15_PD_DA3,
+					PDB_EP_CORE_MASK, PDB_EP_CORE_MASK);
+
+		snd_soc_update_bits(w->codec, COD3025X_15_PD_DA3,
+					PDB_EP_DRV_MASK, PDB_EP_DRV_MASK);
+		msleep(50);
+
+		snd_soc_update_bits(w->codec, COD3025X_15_PD_DA3,
+					PDB_EP_CORE_MASK, 0x00);
+
+		snd_soc_update_bits(w->codec, COD3025X_15_PD_DA3,
+					PDB_EP_DRV_MASK, 0x00);
+
+		snd_soc_update_bits(w->codec, COD3025X_DC_CTRL_EPS,
+				CTMI_EP_A_MASK,
+				(CTMI_EP_A_1_UA << CTMI_EP_A_SHIFT));
 
 		snd_soc_update_bits(w->codec, COD3025X_15_PD_DA3,
 					PDB_DOUBLER_MASK | PDB_CP_MASK,
@@ -1252,10 +1374,17 @@ static int epdrv_ev(struct snd_soc_dapm_widget *w,
 			DAC1_SOFT_MUTE_MASK, 0);
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
+#ifdef CONFIG_SND_RF_REF_RCV_STATE
+		cod3x25x_rf_rcv_state(cod3025x,true);
+#endif
 		/* enable soft mute */
 		snd_soc_update_bits(w->codec, COD3025X_50_DAC1,
 			DAC1_SOFT_MUTE_MASK, DAC1_SOFT_MUTE_MASK);
 		msleep(24);
+
+		snd_soc_update_bits(w->codec, COD3025X_D8_CTRL_CP2,
+			CTMD_CP_H2L_MASK,
+			VIDD_HALF_VDD_DELAY_32MS << CTMD_CP_H2L_SHIFT);
 
 		snd_soc_update_bits(w->codec, COD3025X_D7_CTRL_CP1,
 			CTRV_CP_NEGREF_MASK, 0x0f);
@@ -1264,6 +1393,7 @@ static int epdrv_ev(struct snd_soc_dapm_widget *w,
 					CTMV_CP_MODE_MASK,
 					CTMV_CP_MODE_HALF_VDD << CTMV_CP_MODE_SHIFT);
 
+		msleep(150);
 		snd_soc_update_bits(w->codec, COD3025X_37_MIX_DA2,
 				EN_EP_MIX_DCTL_MASK | EN_EP_MIX_DCTR_MASK, 0x0);
 		cod3025x_usleep(100);
@@ -1277,15 +1407,23 @@ static int epdrv_ev(struct snd_soc_dapm_widget *w,
 					PDB_EP_DRV_MASK, 0);
 
 		snd_soc_update_bits(w->codec, COD3025X_13_PD_DA1,
-						PDB_DCTL_MASK |
-						RESETB_DCTL_MASK, 0);
+						PDB_DCTL_MASK | PDB_DCTR_MASK |
+						RESETB_DCTL_MASK | RESETB_DCTR_MASK, 0);
 
-		snd_soc_update_bits(w->codec, COD3025X_10_PD_REF,
-					PDB_VMID_MASK | PDB_IGEN_MASK, 0);
-
+		if (cod3025x->mic_bias2_highquality == false) {
+			snd_soc_update_bits(w->codec, COD3025X_10_PD_REF,
+						PDB_VMID_MASK | PDB_IGEN_MASK, 0);
+		} else {
+			snd_soc_update_bits(w->codec, COD3025X_10_PD_REF,
+						PDB_IGEN_MASK, 0);
+		}
 		snd_soc_update_bits(w->codec, COD3025X_33_CTRL_EP,
 					CTMV_CP_MODE_MASK,
 					CTMV_CP_MODE_ANALOG << CTMV_CP_MODE_SHIFT);
+
+		snd_soc_update_bits(w->codec, COD3025X_D8_CTRL_CP2,
+				CTMD_CP_H2L_MASK,
+				VIDD_HALF_VDD_DELAY_64MS << CTMD_CP_H2L_SHIFT);
 
 		/* disable_soft_mute */
 		snd_soc_update_bits(w->codec, COD3025X_50_DAC1,
@@ -1605,14 +1743,11 @@ int cod3025x_set_externel_jd(struct snd_soc_codec *codec)
 #else
 	cod3025x_enable(codec->dev);
 #endif
-	/* Enable External jack detecter */
-	ret = snd_soc_update_bits(codec, COD3025X_83_JACK_DET1,
-			CTMP_JD_MODE_MASK, CTMP_JD_MODE_MASK);
 
-	/* Disable Internel Jack detecter */
-	ret |= snd_soc_update_bits(codec, COD3025X_81_DET_ON,
-			EN_PDB_JD_CLK_MASK | EN_PDB_JD_MASK,
-			EN_PDB_JD_CLK_MASK);
+	if (cod3025x->mic_bias2_highquality == true) {
+		snd_soc_update_bits(codec, COD3025X_18_CTRL_REF,
+							CTMF_VMID_MASK, 0x40);
+	}
 
 	/* Keep mic2 bias always high */
 	snd_soc_update_bits(codec, COD3025X_86_DET_TIME,
@@ -1621,6 +1756,15 @@ int cod3025x_set_externel_jd(struct snd_soc_codec *codec)
 			((CTMD_BTN_DBNC_5 << CTMD_BTN_DBNC_SHIFT) |
 			(CTMF_BTN_ON_14_CLK << CTMF_BTN_ON_SHIFT) |
 			(CTMF_DETB_PERIOD_8 << CTMF_DETB_PERIOD_SHIFT)));
+
+	/* Enable External jack detecter */
+	ret = snd_soc_update_bits(codec, COD3025X_83_JACK_DET1,
+			CTMP_JD_MODE_MASK, CTMP_JD_MODE_MASK);
+
+	/* Disable Internel Jack detecter */
+	ret |= snd_soc_update_bits(codec, COD3025X_81_DET_ON,
+			EN_PDB_JD_CLK_MASK | EN_PDB_JD_MASK,
+			EN_PDB_JD_CLK_MASK);
 
 	snd_soc_update_bits(codec, COD3025X_05_IRQ1M,
 				IRQ1M_MASK_ALL, 0xFF);
@@ -1708,7 +1852,7 @@ static int cod3025x_dai_hw_params(struct snd_pcm_substream *substream,
 	struct cod3025x_priv *cod3025x = snd_soc_codec_get_drvdata(codec);
 	unsigned int cur_aifrate;
 	int dnc;
-	unsigned char ctrl_hps, hp_current_val = CTMI_HP_2_UA;
+	unsigned char ctrl_hps, hp_current_val = CTMI_HP_3_UA;
 	int ret;
 
 	dev_dbg(codec->dev, "%s called\n", __func__);
@@ -1792,6 +1936,16 @@ static void cod3025x_jack_det_work(struct work_struct *work)
 		jackdet->mic_det = false;
 	}
 
+	if(jackdet->button_det == true){
+		if(!jackdet->jack_det && !jackdet->mic_det){
+			jackdet->button_det = false;
+			input_report_key(cod3025x->input, jackdet->button_code, 0);
+			input_sync(cod3025x->input);
+			cod3025x_process_button_ev(jackdet->button_code, 0);
+			dev_err(cod3025x->dev, ":key %d released\n", jackdet->button_code);
+		}
+	}
+
 	if (jackdet->jack_det && jackdet->mic_det)
 		switch_set_state(&cod3025x->sdev, 1);
 	else if (jackdet->jack_det)
@@ -1843,7 +1997,7 @@ static void cod3025x_jack_det_work(struct work_struct *work)
 }
 
 #define ADC_TRACE_NUM		5
-#define ADC_TRACE_NUM2		10
+#define ADC_TRACE_NUM2		4
 #define ADC_READ_DELAY_US	500
 #define ADC_READ_DELAY_MS	1
 #define ADC_DEVI_THRESHOLD	18000
@@ -1884,7 +2038,6 @@ static void cod3025x_buttons_work(struct work_struct *work)
 	int current_button_state;
 	int adc;
 	int i, avg, devi;
-	int adc_final_values[ADC_TRACE_NUM2];
 	int j;
 	int adc_final = 0;
 	int adc_max = 0;
@@ -1924,7 +2077,6 @@ static void cod3025x_buttons_work(struct work_struct *work)
 			}
 			return;
 		}
-		adc_final_values[j] = avg;
 
 		if (avg > adc_max)
 			adc_max = avg;
@@ -1955,6 +2107,7 @@ static void cod3025x_buttons_work(struct work_struct *work)
 				input_report_key(cod3025x->input, jd->button_code, 1);
 				input_sync(cod3025x->input);
 				jd->button_det = true;
+				cod3025x_process_button_ev(jd->button_code, 1);
 				dev_err(cod3025x->dev, ":key %d is pressed, adc %d\n",
 						 btn_zones[i].code, adc);
 				return;
@@ -1965,6 +2118,7 @@ static void cod3025x_buttons_work(struct work_struct *work)
 		jd->button_det = false;
 		input_report_key(cod3025x->input, jd->button_code, 0);
 		input_sync(cod3025x->input);
+		cod3025x_process_button_ev(jd->button_code, 0);
 		dev_err(cod3025x->dev, ":key %d released\n", jd->button_code);
 	}
 
@@ -2143,6 +2297,13 @@ int cod3025x_jack_mic_register(struct snd_soc_codec *codec)
 			(CTMF_BTN_ON_14_CLK << CTMF_BTN_ON_SHIFT) |
 			(detb_period << CTMF_DETB_PERIOD_SHIFT)));
 
+	if(cod3025x->use_ldet_threshold)
+	{
+		snd_soc_update_bits(codec, COD3025X_83_JACK_DET1,
+			CTRV_JD_VTH_MASK, 0x02);
+		snd_soc_update_bits(codec, COD3025X_83_JACK_DET1,
+			CTRV_JD_POP_MASK, CTRV_JD_POP_MASK);
+	}
 	/** When reboot , the PDB_JD is remained. *
 	* So jack detection interrupt does not occur.*
 	* reset PDB_JD when boot up time.**/
@@ -2368,6 +2529,13 @@ static void cod3025x_post_fw_update_failure(void *context)
 		snd_soc_update_bits(codec, COD3025X_06_IRQ2M,
 				IRQ2M_MASK_ALL, 0x02);
 	}
+
+	if (cod3025x->mic_bias2_highquality == true) {
+		/* mic bias2 high quality setting */
+		snd_soc_update_bits(codec, COD3025X_18_CTRL_REF,
+				CTRM_MCB2_MASK, CTRM_MCB2_MASK);
+	}
+
 	/* Default value, enabling HPF and setting freq at 100Hz */
 	snd_soc_write(codec, COD3025X_42_ADC1, 0x0c);
 
@@ -2404,6 +2572,8 @@ static void cod3025x_post_fw_update_failure(void *context)
 
 	/* Update for 3-pole jack detection */
 	snd_soc_write(codec, COD3025X_85_MIC_DET, 0x03);
+
+	snd_soc_write(codec, COD3025X_70_CLK1_AD, 0x07);
 
 	/* Reset input/output selector bits */
 	cod3025x_reset_io_selector_bits(codec);
@@ -2460,6 +2630,11 @@ static void cod3025x_post_fw_update_success(void *context)
 				IRQ2M_MASK_ALL, 0);
 	}
 
+	if (cod3025x->mic_bias2_highquality == true) {
+		/* mic bias2 high quality setting */
+		snd_soc_update_bits(codec, COD3025X_18_CTRL_REF,
+				CTRM_MCB2_MASK, CTRM_MCB2_MASK);
+	}
 	/* Update for 3-pole jack detection */
 	snd_soc_write(codec, COD3025X_85_MIC_DET, 0x03);
 
@@ -2485,6 +2660,8 @@ static void cod3025x_post_fw_update_success(void *context)
 
 	/* Configure mic bias voltage */
 	cod3025x_configure_mic_bias(codec);
+
+	snd_soc_write(codec, COD3025X_70_CLK1_AD, 0x07);
 
 	/*
 	 * Need to restore back the device specific OTP values as the firmware
@@ -2552,6 +2729,17 @@ static void cod3025x_reg_restore(struct snd_soc_codec *codec)
 		cod3025x_regmap_sync(codec->dev);
 		cod3025x_restore_otp_registers(cod3025x->codec);
 	}
+}
+static void cod3025x_use_bias_highquality_mode(struct cod3025x_priv *cod3025x)
+{
+	struct device *dev = cod3025x->dev;
+
+	if (of_find_property(dev->of_node,
+				"use-highqual-bias", NULL))
+		cod3025x->mic_bias2_highquality = true;
+	else
+		cod3025x->mic_bias2_highquality = false;
+
 }
 static void cod3025x_i2c_parse_dt(struct cod3025x_priv *cod3025x)
 {
@@ -2635,6 +2823,11 @@ static void cod3025x_i2c_parse_dt(struct cod3025x_priv *cod3025x)
 	if (of_find_property(dev->of_node, "use-btn-adc-mode", NULL) != NULL)
 		cod3025x->use_btn_adc_mode = true;
 
+	if (of_find_property(dev->of_node, "use-ldet-threshold", NULL) != NULL)
+		cod3025x->use_ldet_threshold = true;
+	else
+		cod3025x->use_ldet_threshold = false;
+
 	dev_err(dev, "Using %s for button detection\n",
 			cod3025x->use_btn_adc_mode ? "GPADC" : "internal h/w");
 	if (cod3025x->use_btn_adc_mode) {
@@ -2657,6 +2850,18 @@ static void cod3025x_i2c_parse_dt(struct cod3025x_priv *cod3025x)
 				cod3025x->jack_buttons_zones[i].adc_low,
 				cod3025x->jack_buttons_zones[i].adc_high);
 	}
+#ifdef CONFIG_SND_RF_REF_RCV_STATE
+	cod3025x->rcv_state_gpio = of_get_named_gpio(dev->of_node, "rf-ref-rcv-state-gpio", 0);
+	if (cod3025x->rcv_state_gpio < 0)
+		dev_dbg(dev,"%s : can not find the earjack-rfeardet-gpio in the dt\n", __func__);
+	else
+		dev_dbg(dev,"%s : earjack-rcv_state_gpio =%d\n", __func__, cod3025x->rcv_state_gpio);
+
+	if (gpio_request(cod3025x->rcv_state_gpio, "RCV STATE"))
+		dev_dbg(dev,"GPIO_RF_EAR_DET GPIO set error!\n");
+	else
+		gpio_direction_output(cod3025x->rcv_state_gpio, 1);
+#endif
 }
 
 static int cod3025x_codec_probe(struct snd_soc_codec *codec)
@@ -2677,12 +2882,20 @@ static int cod3025x_codec_probe(struct snd_soc_codec *codec)
 		return PTR_ERR(cod3025x->vdd);
 	}
 
+	if (cod3025x->mic_bias2_highquality == true) {
+		cod3025x_regulators_enable(cod3025x->codec);
+	}
 #ifdef CONFIG_PM_RUNTIME
 	pm_runtime_get_sync(codec->dev);
 #else
 	cod3025x_enable(codec->dev);
 #endif
-
+	if (cod3025x->mic_bias2_highquality == true) {
+		snd_soc_update_bits(cod3025x->codec, COD3025X_18_CTRL_REF,
+							CTMF_VMID_MASK, 0);
+		snd_soc_update_bits(cod3025x->codec, COD3025X_10_PD_REF,
+					PDB_VMID_MASK, PDB_VMID_MASK);
+	}
 	cod3025x->is_probe_done = true;
 	
 	/* Initialize work queue for button handling */
@@ -2825,6 +3038,7 @@ static int cod3025x_i2c_probe(struct i2c_client *i2c,
 	cod3025x->use_external_jd = false;
 	cod3025x->is_probe_done = false;
 	cod3025x->use_btn_adc_mode = false;
+	g_cod3025x = cod3025x;
 
 	cod3025x->regmap = devm_regmap_init_i2c(i2c, &cod3025x_regmap);
 	if (IS_ERR(cod3025x->regmap)) {
@@ -2847,6 +3061,8 @@ static int cod3025x_i2c_probe(struct i2c_client *i2c,
 			cod3025x_dai, ARRAY_SIZE(cod3025x_dai));
 	if (ret < 0)
 		dev_err(&i2c->dev, "Failed to register codec: %d\n", ret);
+
+	cod3025x_use_bias_highquality_mode(cod3025x);
 
 #ifdef CONFIG_PM_RUNTIME
 	pm_runtime_enable(cod3025x->dev);
@@ -2892,7 +3108,12 @@ static int cod3025x_enable(struct device *dev)
 
 
 	cod3025x_cfg_gpio(dev, "default");
-	cod3025x_regulators_enable(cod3025x->codec);
+	if (cod3025x->mic_bias2_highquality == false) {
+		dev_dbg(dev, "[DEBUG](*) %s, regulator disable\n", __func__);
+		cod3025x_regulators_enable(cod3025x->codec);
+	} else {
+		dev_dbg(dev, "[DEBUG](*) %s, not control ldo\n", __func__);
+	}
 	cod3025x_clock_enable(cod3025x->codec);
 	/*
 	 * Below sequence should be maintained, so that even the jd interupt
@@ -2925,7 +3146,14 @@ static int cod3025x_disable(struct device *dev)
 	regcache_cache_only(cod3025x->regmap, true);
 
 	cod3025x_clock_disable(cod3025x->codec);
-	cod3025x_regulators_disable(cod3025x->codec);
+
+	if (cod3025x->mic_bias2_highquality == false) {
+		cod3025x_regulators_disable(cod3025x->codec);
+		dev_dbg(dev, "[DEBUG](*) %s, regulator disable\n", __func__);
+	} else {
+		dev_dbg(dev, "[DEBUG](*) %s, not control ldo\n", __func__);
+	}
+
 	cod3025x_cfg_gpio(dev, "idle");
 
 	return 0;
@@ -2933,6 +3161,22 @@ static int cod3025x_disable(struct device *dev)
 
 static int cod3025x_sys_suspend(struct device *dev)
 {
+	struct cod3025x_priv *cod3025x = dev_get_drvdata(dev);
+	dev_dbg(dev, "(*) %s\n", __func__);
+	if (cod3025x->mic_bias2_highquality == true) {
+		if (cod3025x->is_suspend == true) {// codec is enable so does not diable regulator
+			regcache_cache_only(cod3025x->regmap, false);
+			snd_soc_update_bits(cod3025x->codec, COD3025X_18_CTRL_REF,
+							CTRM_MCB2_MASK, 0);
+			regcache_cache_only(cod3025x->regmap, true);
+			dev_dbg(dev, "[DEBUG](*) %s, regulator disable\n", __func__);
+			cod3025x_regulators_disable(cod3025x->codec);
+		}
+	} else {
+		dev_dbg(dev, "[DEBUG](*) %s, nothing!!!\n", __func__);
+	}
+	return 0;
+
 #ifndef CONFIG_PM_RUNTIME
 	struct cod3025x_priv *cod3025x = dev_get_drvdata(dev);
 
@@ -2949,6 +3193,29 @@ static int cod3025x_sys_suspend(struct device *dev)
 
 static int cod3025x_sys_resume(struct device *dev)
 {
+	struct cod3025x_priv *cod3025x = dev_get_drvdata(dev);
+	dev_dbg(dev, "(*) %s\n", __func__);
+	if (cod3025x->mic_bias2_highquality == true) {
+		if(cod3025x->is_suspend == true) {// codec is enable so does not diable regulator
+			dev_dbg(dev, "[DEBUG](*) %s, regulator enable\n", __func__);
+			cod3025x_regulators_enable(cod3025x->codec);
+			mdelay(11);
+			regcache_cache_only(cod3025x->regmap, false);
+			snd_soc_update_bits(cod3025x->codec, COD3025X_18_CTRL_REF,
+							CTMF_VMID_MASK, 0);
+			snd_soc_write(cod3025x->codec, 0x10 , 0x20);
+			mdelay(135);
+			snd_soc_update_bits(cod3025x->codec, COD3025X_18_CTRL_REF,
+							CTMF_VMID_MASK, 0x40);
+			snd_soc_update_bits(cod3025x->codec, COD3025X_18_CTRL_REF,
+							CTRM_MCB2_MASK, CTRM_MCB2_MASK);
+			regcache_cache_only(cod3025x->regmap, true);
+		}
+	} else {
+		dev_dbg(dev, "[DEBUG](*) %s, nothing!!!\n", __func__);
+	}
+	return 0;
+
 #ifndef CONFIG_PM_RUNTIME
 	struct cod3025x_priv *cod3025x = dev_get_drvdata(dev);
 

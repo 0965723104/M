@@ -951,6 +951,10 @@ static struct page *shmem_alloc_page(gfp_t gfp,
 	pvma.vm_policy = mpol_shared_policy_lookup(&info->policy, index);
 
 	page = alloc_page_vma(gfp, &pvma, 0);
+	if (page && is_cma_pageblock(page)) {
+		 __free_page(page);
+		 page = alloc_pages(gfp & ~__GFP_MOVABLE, 0);
+	}
 
 	/* Drop reference taken by mpol_shared_policy_lookup() */
 	mpol_cond_put(pvma.vm_policy);
@@ -1948,11 +1952,9 @@ static long shmem_fallocate(struct file *file, int mode, loff_t offset,
 									NULL);
 		if (error) {
 			/* Remove the !PageUptodate pages we added */
-			if (index > start) {
-				shmem_undo_range(inode,
-				 (loff_t)start << PAGE_CACHE_SHIFT,
-				 ((loff_t)index << PAGE_CACHE_SHIFT) - 1, true);
-			}
+			shmem_undo_range(inode,
+				(loff_t)start << PAGE_CACHE_SHIFT,
+				(loff_t)index << PAGE_CACHE_SHIFT, true);
 			goto undone;
 		}
 
@@ -2130,10 +2132,8 @@ static int shmem_rename(struct inode *old_dir, struct dentry *old_dentry, struct
 
 	if (new_dentry->d_inode) {
 		(void) shmem_unlink(new_dir, new_dentry);
-		if (they_are_dirs) {
-			drop_nlink(new_dentry->d_inode);
+		if (they_are_dirs)
 			drop_nlink(old_dir);
-		}
 	} else if (they_are_dirs) {
 		drop_nlink(old_dir);
 		inc_nlink(new_dir);

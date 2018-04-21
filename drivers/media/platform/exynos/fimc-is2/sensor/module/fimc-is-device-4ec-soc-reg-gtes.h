@@ -8,8 +8,8 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-#ifndef FIMC_IS_DEVICE_4EC_SOC_REG_H
-#define FIMC_IS_DEVICE_4EC_SOC_REG_H
+#ifndef FIMC_IS_DEVICE_4EC_SOC_REG_GTES_H
+#define FIMC_IS_DEVICE_4EC_SOC_REG_GTES_H
 
 static const u32 s5k4ecgx_init_reg1[] = {
  //==================================================================================
@@ -3447,13 +3447,8 @@ static const u32 s5k4ecgx_init_reg2[] = {
 	0x0F1203E8,	//REG_0TC_PCFG_usMaxFrTimeMsecMult10 //03E8h:10fps
 	0x0F12014A,	//REG_0TC_PCFG_usMinFrTimeMsecMult10 //014Ah:30fps
 	0x002A02D0,
-#if defined(CONFIG_CAMERA_REAR_SENSOR_VFLIP)
 	0x0F120003,	 //REG_0TC_PCFG_uPrevMirror
 	0x0F120003,	 //REG_0TC_PCFG_uCaptureMirror
-#else
-	0x0F120000,	 //REG_0TC_PCFG_uPrevMirror
-	0x0F120000,	 //REG_0TC_PCFG_uCaptureMirror
-#endif
 
 //===================================================================
 // Capture
@@ -4275,8 +4270,8 @@ static const u32 s5k4ecgx_EV_Minus_4[] = {
 	0x0F120018,   //TVAR_ae_BrAve
 
 	0x002A0544,
-	0x0F12011F,
-	0x0F1200E1,
+	0x0F120129,
+	0x0F1200d7,
 };
 
 /* brightness_level_1 */
@@ -4287,8 +4282,8 @@ static const u32 s5k4ecgx_EV_Minus_3[] = {
 	0x0F12001E,   //TVAR_ae_BrAve
 
 	0x002A0544,
-	0x0F12011F,
-	0x0F1200E1,
+	0x0F120129,
+	0x0F1200d7,
 };
 
 /* brightness_level_2 */
@@ -4299,8 +4294,8 @@ static const u32 s5k4ecgx_EV_Minus_2[] = {
 	0x0F120025,   //TVAR_ae_BrAve
 
 	0x002A0544,
-	0x0F12011F,
-	0x0F1200E1,
+	0x0F120129,
+	0x0F1200d7,
 };
 
 /* brightness_level_3 */
@@ -4309,6 +4304,10 @@ static const u32 s5k4ecgx_EV_Minus_1[] = {
 	0x00287000,
 	0x002A1484,
 	0x0F120030,   //TVAR_ae_BrAve
+	
+	0x002A0544,
+	0x0F120129,
+	0x0F1200D7,
 };
 
 /* brightness_level_4 */
@@ -4319,8 +4318,8 @@ static const u32 s5k4ecgx_EV_Default[] = {
 	0x0F12003C,   //TVAR_ae_BrAve
 
 	0x002A0544,
-	0x0F120111,
-	0x0F1200EF,
+	0x0F120129,
+	0x0F1200d7,
 };
 
 /* brightness_level_5 */
@@ -4329,6 +4328,10 @@ static const u32 s5k4ecgx_EV_Plus_1[] = {
 	0x00287000,
 	0x002A1484,
 	0x0F12004E,   //TVAR_ae_BrAve
+	
+	0x002A0544,
+	0x0F120129,
+	0x0F1200d7,
 };
 
 /* brightness_level_6 */
@@ -4337,6 +4340,10 @@ static const u32 s5k4ecgx_EV_Plus_2[] = {
 	0x00287000,
 	0x002A1484,
 	0x0F12005C,		/*TVAR_ae_BrAve 1101 0060->005C */
+	
+	0x002A0544,
+	0x0F120129,
+	0x0F1200d7,
 };
 
 /* brightness_level_7 */
@@ -4345,6 +4352,10 @@ static const u32 s5k4ecgx_EV_Plus_3[] = {
 	0x00287000,
 	0x002A1484,
 	0x0F120070,		/*TVAR_ae_BrAve */
+	
+	0x002A0544,
+	0x0F120129,
+	0x0F1200d7,
 };
 
 /* brightness_level_8 */
@@ -4353,6 +4364,10 @@ static const u32 s5k4ecgx_EV_Plus_4[] = {
 	0x00287000,
 	0x002A1484,
 	0x0F120080,		/*TVAR_ae_BrAve */
+	
+	0x002A0544,
+	0x0F120129,
+	0x0F1200d7,
 };
 
 /* camcorder brightness_level_0 */
@@ -7569,282 +7584,6 @@ static const u32 s5k4ecgx_60hz_fixed[] = {
 	0x0F120001,
 };
 
-#ifdef CONFIG_VIDEO_S5K4ECGX_SENSOR_JPEG
-/* 2560 x 1920 */
-static const u32  s5k4ecgx_5M_Capture[] = {
-	0xFCFCD000,
-
-	0x00287000,
-	0x002A0258,
-	0x0F120A00,		/*REG_TC_GP_CapReqInputWidth 2560 */
-	0x0F120780,		/*REG_TC_GP_CapReqInputHeight 1920 */
-	0x0F120010,		/*REG_TC_GP_CapInputWidthOfs (2592-2560)/2 */
-	0x0F12000C,		/*REG_TC_GP_CapInputHeightOfs (1944-1920)/2 */
-
-	0x002A0264,
-	0x0F120001,		/*REG_TC_GP_bUseReqInputInCap */
-
-	0x002A049C,
-	0x0F120A00,		/*REG_TC_PZOOM_CapZoomReqInputWidth 2560 */
-	0x0F120780,		/*REG_TC_PZOOM_CapZoomReqInputHeight 1920 */
-	0x0F120000,		/*REG_TC_PZOOM_CapZoomReqInputWidthOfs */
-	0x0F120000,		/*REG_TC_PZOOM_CapZoomReqInputHeightOfs */
-
-	0x002A047C,
-	0x0F120001,		/*REG_TC_THUMB_Thumb_bActive */
-	0x0F120280,		/*REG_TC_THUMB_Thumb_uWidth 640 */
-	0x0F1201E0,		/*REG_TC_THUMB_Thumb_uHeight 480 */
-
-	0x002A0398,
-	0x0F120A00,		/*REG_0TC_CCFG_usWidth 2560 */
-	0x0F120780,		/*REG_0TC_CCFG_usHeight 1920 */
-
-	0x002A024E,
-	0x0F120001,		/*REG_TC_GP_NewConfigSync */
-	0x002A0270,
-	0x0F120001,		/*REG_TC_GP_CapConfigChanged */
-};
-
-/* 2048 x 1536 */
-static const u32  s5k4ecgx_3M_Capture[] = {
-	0xFCFCD000,
-
-	0x00287000,
-	0x002A0258,
-	0x0F120A00,		/*REG_TC_GP_CapReqInputWidth 2560 */
-	0x0F120780,		/*REG_TC_GP_CapReqInputHeight 1920 */
-	0x0F120010,		/*REG_TC_GP_CapInputWidthOfs (2592-2560)/2 */
-	0x0F12000C,		/*REG_TC_GP_CapInputHeightOfs (1944-1920)/2 */
-
-	0x002A0264,
-	0x0F120001,		/*REG_TC_GP_bUseReqInputInCap */
-
-	0x002A049C,
-	0x0F120A00,		/*REG_TC_PZOOM_CapZoomReqInputWidth 2560 */
-	0x0F120780,		/*REG_TC_PZOOM_CapZoomReqInputHeight 1920 */
-	0x0F120000,		/*REG_TC_PZOOM_CapZoomReqInputWidthOfs */
-	0x0F120000,		/*REG_TC_PZOOM_CapZoomReqInputHeightOfs */
-
-	0x002A047C,
-	0x0F120001,		/*REG_TC_THUMB_Thumb_bActive */
-	0x0F120280,		/*REG_TC_THUMB_Thumb_uWidth 640 */
-	0x0F1201E0,		/*REG_TC_THUMB_Thumb_uHeight 480 */
-
-	0x002A0398,
-	0x0F120800,		/*REG_0TC_CCFG_usWidth 2048 */
-	0x0F120600,		/*REG_0TC_CCFG_usHeight 1536 */
-
-	0x002A024E,
-	0x0F120001,		/*REG_TC_GP_NewConfigSync */
-	0x002A0270,
-	0x0F120001,		/*REG_TC_GP_CapConfigChanged */
-};
-
-/* 1600 x 1200 */
-static const u32  s5k4ecgx_2M_Capture[] = {
-	0xFCFCD000,
-
-	0x00287000,
-	0x002A0258,
-	0x0F120A00,		/*REG_TC_GP_CapReqInputWidth 2560 */
-	0x0F120780,		/*REG_TC_GP_CapReqInputHeight 1920 */
-	0x0F120010,		/*REG_TC_GP_CapInputWidthOfs (2592-2560)/2 */
-	0x0F12000C,		/*REG_TC_GP_CapInputHeightOfs (1944-1920)/2 */
-
-	0x002A0264,
-	0x0F120001,		/*REG_TC_GP_bUseReqInputInCap */
-
-	0x002A049C,
-	0x0F120A00,		/*REG_TC_PZOOM_CapZoomReqInputWidth 2560 */
-	0x0F120780,		/*REG_TC_PZOOM_CapZoomReqInputHeight 1920 */
-	0x0F120000,		/*REG_TC_PZOOM_CapZoomReqInputWidthOfs */
-	0x0F120000,		/*REG_TC_PZOOM_CapZoomReqInputHeightOfs */
-
-	0x002A047C,
-	0x0F120001,		/*REG_TC_THUMB_Thumb_bActive */
-	0x0F120280,		/*REG_TC_THUMB_Thumb_uWidth 640 */
-	0x0F1201E0,		/*REG_TC_THUMB_Thumb_uHeight 480 */
-
-	0x002A0398,
-	0x0F120640,		/*REG_0TC_CCFG_usWidth 1600 */
-	0x0F1204B0,		/*REG_0TC_CCFG_usHeight 1200 */
-
-	0x002A024E,
-	0x0F120001,		/*REG_TC_GP_NewConfigSync */
-	0x002A0270,
-	0x0F120001,		/*REG_TC_GP_CapConfigChanged */
-};
-/* 1280 x 960 */
-static const u32  s5k4ecgx_1M_Capture[] = {
-	0xFCFCD000,
-
-	0x0028D000,
-	0x002AE410,
-	0x0F123E01,
-
-	0x00287000,
-	0x002A18AC,
-	0x0F120060, /*senHal_uAddColsBin */
-	0x0F120060, /*senHal_uAddColsNoBin */
-	0x0F120A20, /*senHal_uMinColsBin */
-	0x0F120AB0, /*senHal_uMinColsNoBin */
-
-	0x002A0250,
-	0x0F120A00, //REG_TC_GP_PrevReqInputWidth //2560
-	0x0F120780, //REG_TC_GP_PrevReqInputHeight //1920
-	0x0F120010, //REG_TC_GP_PrevInputWidthOfs //(2592-2560)/2
-	0x0F12000C, //REG_TC_GP_PrevInputHeightOfs //(1944-1920)/2
-
-	0x002A0262,
-	0x0F120001, /*REG_TC_GP_bUseReqInputInPre */
-
-	0x002A0494,
-	0x0F120A00,	//REG_TC_PZOOM_PrevZoomReqInputWidth //2560
-	0x0F120780,	//REG_TC_PZOOM_PrevZoomReqInputHeight //1920
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputWidthOfs
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputHeightOfs
-
-	0x002A02A6,
-	0x0F120500, /*REG_0TC_PCFG_usWidth //1280 */
-	0x0F1203C0, /*REG_0TC_PCFG_usHeight //960 */
-
-	0x002A0266,
-	0x0F120000,
-	0x002A026A,
-	0x0F120001,
-	0x002A024E,
-	0x0F120001,
-	0x002A0268,
-	0x0F120001,
-};
-
-/* 1024 x 768 */
-static const u32 s5k4ecgx_XGA_Capture[] = {
-	0xFCFCD000,
-
-	0x0028D000,
-	0x002AE410,
-	0x0F123E01,
-
-	0x00287000,
-	0x002A18AC,
-	0x0F120060,	//senHal_uAddColsBin
-	0x0F120060,	//senHal_uAddColsNoBin
-	0x0F1206C8,	//senHal_uMinColsBin
-	0x0F1206C8,	//senHal_uMinColsNoBin
-
-	0x002A0250,
-	0x0F120A00, //REG_TC_GP_PrevReqInputWidth //2560
-	0x0F120780, //REG_TC_GP_PrevReqInputHeight //1920
-	0x0F120010, //REG_TC_GP_PrevInputWidthOfs //(2592-2560)/2
-	0x0F12000C, //REG_TC_GP_PrevInputHeightOfs //(1944-1920)/2
-
-	0x002A0262,
-	0x0F120001,	//REG_TC_GP_bUseReqInputInPre
-
-	0x002A0494,
-	0x0F120A00,	//REG_TC_PZOOM_PrevZoomReqInputWidth //2560
-	0x0F120780,	//REG_TC_PZOOM_PrevZoomReqInputHeight //1920
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputWidthOfs
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputHeightOfs
-
-	0x002A02A6,
-	0x0F120400,	//REG_0TC_PCFG_usWidth //1024
-	0x0F120300,	//REG_0TC_PCFG_usHeight //768
-
-	0x002A0266,
-	0x0F120000,	//REG_TC_GP_ActivePrevConfig
-	0x002A026A,
-	0x0F120001,	//REG_TC_GP_PrevOpenAfterChange
-	0x002A024E,
-	0x0F120001,	//REG_TC_GP_NewConfigSync
-	0x002A0268,
-	0x0F120001,	//REG_TC_GP_PrevConfigChanged
-};
-
-/* 640 x 480 */
-static const u32  s5k4ecgx_VGA_Capture[] = {
-	0xFCFCD000,
-
-	0x00287000,
-	0x002A18AC,
-	0x0F120060,	//senHal_uAddColsBin
-	0x0F120060,	//senHal_uAddColsNoBin
-	0x0F1206C8,	//senHal_uMinColsBin
-	0x0F1206C8,	//senHal_uMinColsNoBin
-
-	0x002A0250,
-	0x0F120A00,	//REG_TC_GP_PrevReqInputWidth //2560
-	0x0F120780,	//REG_TC_GP_PrevReqInputHeight //1920
-	0x0F120010,	//REG_TC_GP_PrevInputWidthOfs //(2592-2560)/2
-	0x0F12000C,	//REG_TC_GP_PrevInputHeightOfs //(1944-1920)/2
-
-	0x002A0262,
-	0x0F120001,	//REG_TC_GP_bUseReqInputInPre
-
-	0x002A0494,
-	0x0F120A00,	//REG_TC_PZOOM_PrevZoomReqInputWidth //2560
-	0x0F120780,	//REG_TC_PZOOM_PrevZoomReqInputHeight //1920
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputWidthOfs
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputHeightOfs
-
-	0x002A02A6,
-	0x0F120280,	//REG_0TC_PCFG_usWidth //640
-	0x0F1201E0,	//REG_0TC_PCFG_usHeight //480
-
-	0x002A0266,
-	0x0F120000,	//REG_TC_GP_ActivePrevConfig
-	0x002A026A,
-	0x0F120001,	//REG_TC_GP_PrevOpenAfterChange
-	0x002A024E,
-	0x0F120001,	//REG_TC_GP_NewConfigSync
-	0x002A0268,
-	0x0F120001,	//REG_TC_GP_PrevConfigChanged
-};
-
-/* 320 x 240 */
-static const u32 s5k4ecgx_QVGA_Capture[] = {
-	0xFCFCD000,
-
-	0x00287000,
-	0x002A18AC,
-	0x0F120060,	//senHal_uAddColsBin
-	0x0F120060,	//senHal_uAddColsNoBin
-	0x0F1206C8,	//senHal_uMinColsBin
-	0x0F1206C8,	//senHal_uMinColsNoBin
-	0x002A02BE,
-	0x0F120000,	//REG_0TC_PCFG_usFrTimeType
-	0x0F120001,	//REG_0TC_PCFG_FrRateQualityType
-
-	0x002A0250,
-	0x0F120A00,	//REG_TC_GP_PrevReqInputWidth //2560
-	0x0F120780,	//REG_TC_GP_PrevReqInputHeight //1920
-	0x0F120010,	//REG_TC_GP_PrevInputWidthOfs //(2592-2560)/2
-	0x0F12000C,	//REG_TC_GP_PrevInputHeightOfs //(1944-1920)/2
-
-	0x002A0262,
-	0x0F120001,	//REG_TC_GP_bUseReqInputInPre
-
-	0x002A0494,
-	0x0F120A00,	//REG_TC_PZOOM_PrevZoomReqInputWidth //2560
-	0x0F120780,	//REG_TC_PZOOM_PrevZoomReqInputHeight //1920
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputWidthOfs
-	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputHeightOfs
-
-	0x002A02A6,
-	0x0F120140,	//REG_0TC_PCFG_usWidth //320
-	0x0F1200F0,	//REG_0TC_PCFG_usHeight //240
-
-	0x002A0266,
-	0x0F120000,	//REG_TC_GP_ActivePrevConfig
-	0x002A026A,
-	0x0F120001,	//REG_TC_GP_PrevOpenAfterChange
-	0x002A024E,
-	0x0F120001,	//REG_TC_GP_NewConfigSync
-	0x002A0268,
-	0x0F120001,	//REG_TC_GP_PrevConfigChanged
-};
-#else
 /* Capture : 2576 x 1932 */
 static const u32 s5k4ecgx_2576_1932_Capture[] = {
 	0xFCFCD000,
@@ -8580,7 +8319,7 @@ static const u32 s5k4ecgx_QVGA_Capture[] = {
 	0x002A0270,
 	0x0F120001,
 };
-#endif
+
 ////////////////// Preview ////////////////////
 
 /* Preview : 2560 x 1920 */
@@ -9469,17 +9208,17 @@ static const u32 s5k4ecgx_352_Preview[] = {
 	0x0F1206C8,	//senHal_uMinColsNoBin
 
 	0x002A0250,
-	0x0F120A00,	//REG_TC_GP_PrevReqInputWidth //2560
-	0x0F1206F0,	//REG_TC_GP_PrevReqInputHeight //1920
-	0x0F120010,	//REG_TC_GP_PrevInputWidthOfs //(2592-2560)/2
-	0x0F120054,	//REG_TC_GP_PrevInputHeightOfs //(1944-1776)/2
+	0x0F120928,	//REG_TC_GP_PrevReqInputWidth //2344
+	0x0F120780,	//REG_TC_GP_PrevReqInputHeight //1920
+	0x0F12007C,	//REG_TC_GP_PrevInputWidthOfs //(2592-2344)/2
+	0x0F12000C,	//REG_TC_GP_PrevInputHeightOfs //(1944-1920)/2
 
 	0x002A0262,
 	0x0F120001,	//REG_TC_GP_bUseReqInputInPre
 
 	0x002A0494,
-	0x0F120A00,	//REG_TC_PZOOM_PrevZoomReqInputWidth //2560
-	0x0F1206F0,	//REG_TC_PZOOM_PrevZoomReqInputHeight //1776
+	0x0F120928,	//REG_TC_PZOOM_PrevZoomReqInputWidth //2344
+	0x0F120780,	//REG_TC_PZOOM_PrevZoomReqInputHeight //1920
 	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputWidthOfs
 	0x0F120000,	//REG_TC_PZOOM_PrevZoomReqInputHeightOfs
 
@@ -9828,6 +9567,11 @@ static const u32 s5k4ecgx_Get_AE_Stable_Status[] = {
 static const u32 s5k4ecgx_Get_Light_Level[] = {
 	0x002C7000,
 	0x002E2C18,
+};
+
+static const u32 s5k4ecgx_get_frame_duration_reg[] = {
+	0x002C7000,
+	0x002E2128,
 };
 
 static const u32 s5k4ecgx_get_1st_af_search_status[] = {

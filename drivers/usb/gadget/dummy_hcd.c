@@ -266,7 +266,7 @@ static void nuke(struct dummy *dum, struct dummy_ep *ep)
 /* caller must hold lock */
 static void stop_activity(struct dummy *dum)
 {
-	int i;
+	struct dummy_ep	*ep;
 
 	/* prevent any more requests */
 	dum->address = 0;
@@ -274,8 +274,8 @@ static void stop_activity(struct dummy *dum)
 	/* The timer is left running so that outstanding URBs can fail */
 
 	/* nuke any pending requests first, so driver i/o is quiesced */
-	for (i = 0; i < DUMMY_ENDPOINTS; ++i)
-		nuke(dum, &dum->ep[i]);
+	list_for_each_entry(ep, &dum->gadget.ep_list, ep.ep_list)
+		nuke(dum, ep);
 
 	/* driver now does any non-usb quiescing necessary */
 }
@@ -923,9 +923,8 @@ static int dummy_udc_stop(struct usb_gadget *g,
 	struct dummy_hcd	*dum_hcd = gadget_to_dummy_hcd(g);
 	struct dummy		*dum = dum_hcd->dum;
 
-	if (driver)
-		dev_dbg(udc_dev(dum), "unregister gadget driver '%s'\n",
-				driver->driver.name);
+	dev_dbg(udc_dev(dum), "unregister gadget driver '%s'\n",
+			driver->driver.name);
 
 	dum->driver = NULL;
 
@@ -1001,8 +1000,8 @@ static int dummy_udc_remove(struct platform_device *pdev)
 {
 	struct dummy	*dum = platform_get_drvdata(pdev);
 
-	device_remove_file(&dum->gadget.dev, &dev_attr_function);
 	usb_del_gadget_udc(&dum->gadget);
+	device_remove_file(&dum->gadget.dev, &dev_attr_function);
 	return 0;
 }
 
