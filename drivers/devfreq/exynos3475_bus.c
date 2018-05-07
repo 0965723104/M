@@ -95,8 +95,8 @@ struct devfreq_clk_states aclk_bus0_333_bus_pll_list = {
 };
 
 struct devfreq_clk_info dout_aclk_bus0_333[] = {
-	{INT_LV0,	400 * MHZ,	0,	&aclk_bus0_333_media_pll_list},
-	{INT_LV1,	334 * MHZ,	0,	&aclk_bus0_333_media_pll_list},
+	{INT_LV0,	333 * MHZ,	0,	&aclk_bus0_333_media_pll_list},
+	{INT_LV1,	333 * MHZ,	0,	&aclk_bus0_333_media_pll_list},
 	{INT_LV2,	276 * MHZ,	0,	&aclk_bus0_333_bus_pll_list},
 };
 
@@ -120,8 +120,8 @@ struct devfreq_clk_states aclk_mfcmscl_333_bus_pll_list = {
 };
 
 struct devfreq_clk_info dout_aclk_mfcmscl_333[] = {
-	{INT_LV0,	400 * MHZ,	0,	&aclk_mfcmscl_333_media_pll_list},
-	{INT_LV1,	334 * MHZ,	0,	&aclk_mfcmscl_333_media_pll_list},
+	{INT_LV0,	333 * MHZ,	0,	&aclk_mfcmscl_333_media_pll_list},
+	{INT_LV1,	333 * MHZ,	0,	&aclk_mfcmscl_333_media_pll_list},
 	{INT_LV2,	276 * MHZ,	0,	&aclk_mfcmscl_333_bus_pll_list},
 };
 
@@ -204,9 +204,9 @@ struct devfreq_clk_info dout_aclk_isp_300[] = {
 };
 
 struct devfreq_opp_table devfreq_int_opp_list[] = {
-	{INT_LV0, 400000, 850000},
-	{INT_LV1, 334000, 750000},
-	{INT_LV2, 275000, 600000},
+	{INT_LV0, 334000, 1175000},
+	{INT_LV1, 333000, 1125000},
+	{INT_LV2, 275000, 1025000},
 };
 
 struct devfreq_clk_info *devfreq_clk_int_info_list[] = {
@@ -292,14 +292,14 @@ struct devfreq_clk_list devfreq_mif_clk[MIF_CLK_COUNT] = {
 };
 
 struct devfreq_opp_table devfreq_mif_opp_list[] = {
-	{MIF_LV0, 1000000, 1200000},
-	{MIF_LV1, 825000, 1200000},
-	{MIF_LV2, 728000, 1175000},
-	{MIF_LV3, 666000, 1100000},
-	{MIF_LV4, 559000, 1050000},
-	{MIF_LV5, 413000, 1025000},
-	{MIF_LV6, 338000, 1025000},
-	{MIF_LV7, 273000, 1025000},
+	{MIF_LV0, 825000, 1200000},
+	{MIF_LV1, 728000, 1200000},
+	{MIF_LV2, 666000, 1175000},
+	{MIF_LV3, 559000, 1100000},
+	{MIF_LV4, 413000, 1050000},
+	{MIF_LV5, 338000, 1025000},
+	{MIF_LV6, 273000, 1025000},
+	{MIF_LV7, 200000, 1025000},
 };
 
 /* MIF_333 */
@@ -922,14 +922,12 @@ static struct dmc_drex_dfs_mif_table dfs_drex_mif_table_1G[] = {
 };
 
 static struct dmc_phy_dfs_mif_table dfs_phy_mif_table[] = {
-	/* 825MHz */
 	PHY_DVFS_CON(0x8A000000, 0x49000000,
 			PHY_DVFS_CON0_SET1_MASK, PHY_DVFS_CON0_SET0_MASK,
 			0x0A002100, 0x000A0021,
 			PHY_DVFS_CON2_SET1_MASK, PHY_DVFS_CON2_SET0_MASK,
 			0x63800000, 0x90700000,
 			PHY_DVFS_CON3_SET1_MASK, PHY_DVFS_CON3_SET0_MASK),
-	/* 728MHz */
 	PHY_DVFS_CON(0x8A000000, 0x49000000,
 			PHY_DVFS_CON0_SET1_MASK, PHY_DVFS_CON0_SET0_MASK,
 			0x0A002100, 0x000A0021,
@@ -949,28 +947,24 @@ static struct dmc_phy_dfs_mif_table dfs_phy_mif_table[] = {
 			0x63800000, 0x90700000,
 			PHY_DVFS_CON3_SET1_MASK, PHY_DVFS_CON3_SET0_MASK),
 	/* Turn the dll off below this */
-	/* 416MHz */
 	PHY_DVFS_CON(0x0A000000, 0x09000000,
 			PHY_DVFS_CON0_SET1_MASK, PHY_DVFS_CON0_SET0_MASK,
 			0x0A001100, 0x000A0011,
 			PHY_DVFS_CON2_SET1_MASK, PHY_DVFS_CON2_SET0_MASK,
 			0x63800000, 0x90700000,
 			PHY_DVFS_CON3_SET1_MASK, PHY_DVFS_CON3_SET0_MASK),
-	/* 338MHz */
 	PHY_DVFS_CON(0x0A000000, 0x09000000,
 			PHY_DVFS_CON0_SET1_MASK, PHY_DVFS_CON0_SET0_MASK,
 			0x0A000100, 0x000A0001,
 			PHY_DVFS_CON2_SET1_MASK, PHY_DVFS_CON2_SET0_MASK,
 			0x63800000, 0x90700000,
 			PHY_DVFS_CON3_SET1_MASK, PHY_DVFS_CON3_SET0_MASK),
-	/* 273MHz */
 	PHY_DVFS_CON(0x0A000000, 0x09000000,
 			PHY_DVFS_CON0_SET1_MASK, PHY_DVFS_CON0_SET0_MASK,
 			0x0A000100, 0x000A0001,
 			PHY_DVFS_CON2_SET1_MASK, PHY_DVFS_CON2_SET0_MASK,
 			0x63800000, 0x90700000,
 			PHY_DVFS_CON3_SET1_MASK, PHY_DVFS_CON3_SET0_MASK),
-	/* 200MHz */
 	PHY_DVFS_CON(0x0A000000, 0x09000000,
 			PHY_DVFS_CON0_SET1_MASK, PHY_DVFS_CON0_SET0_MASK,
 			0x0A009100, 0x000A0091,

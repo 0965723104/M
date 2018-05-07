@@ -63,7 +63,21 @@
 #ifdef CONFIG_INPUT_BOOSTER
 #include <linux/input/input_booster.h>
 #endif
+#define LOGTAG "[doubletap2wakeftsts]: "
 
+#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+#include <linux/input/doubletap2wake.h>
+extern void dt2w_input_event(unsigned int code, int value);
+#else
+#define dt2w_switch 0
+#endif
+
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+#include <linux/input/sweep2wake.h>
+extern void s2w_input_event(unsigned int code, int value);
+#else
+#define s2w_wakeup 0
+#endif
 extern char *saved_command_line;
 
 #define ZINITIX_DEBUG				0
@@ -1877,7 +1891,18 @@ static irqreturn_t bt532_touch_work(int irq, void *data)
 				tsp_debug_info(true, &client->dev, "Finger [%02d] up (%d)\n", i,__LINE__);
 				info->finger_cnt1--;
 				if (info->finger_cnt1 == 0)
-					input_report_key(info->input_dev, BTN_TOUCH, 0);
+					if (info->finger_cnt1 == 0) {
+                input_report_key(info->input_dev, BTN_TOUCH, 0);
+                #ifndef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE_DEBUG
+                                pr_info("doubletap2wake line 1226 BTN_TOUCH = 0 send event\n");
+                #endif
+                #ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+                                dt2w_input_event(BTN_TOUCH, 0);
+                #endif
+                #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+                                s2w_input_event(BTN_TOUCH, 0);
+                #endif
+           }
 				input_mt_slot(info->input_dev, i);
 				input_mt_report_slot_state(info->input_dev,
 											MT_TOOL_FINGER, 0);
@@ -1986,6 +2011,22 @@ static irqreturn_t bt532_touch_work(int irq, void *data)
 			input_report_abs(info->input_dev, ABS_MT_POSITION_X, x);
 			input_report_abs(info->input_dev, ABS_MT_POSITION_Y, y);
 			input_report_key(info->input_dev, BTN_TOUCH, 1);
+
+          #ifndef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE_DEBUG
+                        //pr_info("doubletap2wake line 1120 ABS_MT_POSITION_X = %d send event\n", x);
+                        //pr_info("doubletap2wake line 1120 ABS_MT_POSITION_Y = %d send event\n", y);
+            #endif
+            #ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
+                        dt2w_input_event(BTN_TOUCH, 1);
+                        dt2w_input_event(ABS_MT_POSITION_X, x);
+                        dt2w_input_event(ABS_MT_POSITION_Y, y);
+            #endif
+            #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+                        s2w_input_event(BTN_TOUCH, 1);
+                        s2w_input_event(ABS_MT_POSITION_X, x);
+                        s2w_input_event(ABS_MT_POSITION_Y, y);
+         #endif
+
 		} else if (zinitix_bit_test(sub_status, SUB_BIT_UP)||
 			zinitix_bit_test(prev_sub_status, SUB_BIT_EXIST)) {
 			tsp_debug_info(true, &client->dev, "Finger [%02d] up (%d)\n", i,__LINE__);
@@ -4391,7 +4432,9 @@ static int bt532_power_ctrl(void *data, bool on)
 	struct regulator *regulator_dvdd = NULL;
 	struct regulator *regulator_avdd;
 	int retval = 0;
-
+if(dt2w_switch || s2w_wakeup) {
+		on = true;
+	}
 	if (info->tsp_pwr_enabled == on)
 		return retval;
 
@@ -4943,3 +4986,4 @@ module_exit(bt532_ts_exit);
 MODULE_DESCRIPTION("touch-screen device driver using i2c interface");
 MODULE_AUTHOR("<mika.kim@samsung.com>");
 MODULE_LICENSE("GPL");
+

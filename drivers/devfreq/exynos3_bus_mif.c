@@ -33,7 +33,7 @@
 #include "devfreq_exynos.h"
 #include "governor.h"
 
-#define MIF_RESUME_FREQ (559000)
+#define MIF_RESUME_FREQ (413000)
 
 static struct devfreq_simple_exynos_data exynos3_devfreq_mif_governor_data;
 static struct exynos_devfreq_platdata exynos3_qos_mif;

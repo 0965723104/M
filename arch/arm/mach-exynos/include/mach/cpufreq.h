@@ -157,7 +157,7 @@ static inline int exynos_cpufreq_smpl_warn_notify_call_chain(void)
 #if defined(CONFIG_ARM_EXYNOS3475_CPUFREQ)
 #define COLD_VOLT_OFFSET	37500
 #define ENABLE_MIN_COLD		1
-#define MIN_COLD_VOLTAGE	550000
+#define MIN_COLD_VOLTAGE	300000
 #define LIMIT_COLD_VOLTAGE	1400000
 #define NR_CA7			4
 #define NR_CA15			0

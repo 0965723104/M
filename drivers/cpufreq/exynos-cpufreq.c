@@ -35,7 +35,7 @@
 #include <plat/cpu.h>
 
 #define VOLT_RANGE_STEP		25000
-#define MIN_VOLT 200000
+#define MIN_VOLT 100000
 #define MAX_VOLT_ 1400000
 #define VOLT_DIV		6250
 

@@ -84,6 +84,21 @@ config ARM_EXYNOS3475_CPUFREQ
 	help
 	  This adds the CPUFreq driver for Samsung EXYNOS3475
 	  SoC.
+config SOC_EXYNOS3475_OVERCLOCK
+	bool "Exynos 3475 overclock"
+	depends on ARCH_EXYNOS3 && SOC_EXYNOS3475
+	depends on MACH_UNIVERSAL3475
+	default n
+	help
+	  Say Y here to use overclocked frequencies on Exynos 3475 CPU.
+
+config COC_EXYNOS3475_UNDERLOCK
+	bool "Exynos 3475 unnderlock"
+	depends on ARCH_EXYNOS3 && SOC_EXYNOS3475
+	depends on MACH_UNIVERSAL3475
+	default n
+	help
+	  Say Y here to use underlock frequencies on Exynos 3475 CPU.
 
 config ARM_HIGHBANK_CPUFREQ
 	tristate "Calxeda Highbank-based"

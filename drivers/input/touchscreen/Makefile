@@ -82,3 +82,6 @@ obj-$(CONFIG_TOUCHSCREEN_ZINITIX_BT532) += zinitix/
 obj-$(CONFIG_TOUCHSCREEN_ZINITIX_ZT75XX) += zinitix/
 obj-$(CONFIG_TOUCHSCREEN_MELFAS_MMS438)	+= melfas_mms400/
 obj-$(CONFIG_TOUCHSCREEN_CYTTSP5) +=cyttsp5/
+obj-$(CONFIG_TOUCHSCREEN_SWEEP2WAKE)		+= sweep2wake.o
+# for doubletap2wake, leave 1st to avoid merge issues at the end of the file
+obj-$(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)	+= doubletap2wake.o
