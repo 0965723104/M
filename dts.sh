@@ -1,7 +1,7 @@
 #!/bin/bash
 DTS=arch/arm/boot/dts
 # GCC
-export CROSS_COMPILE=/home/minhka98/arm-eabi-4.8/bin/arm-eabi-
+export CROSS_COMPILE=/home/minhka98/kernel/toolchain/arm-eabi-4.8/bin/arm-eabi-
 ### MANUAL DT.IMG GENERATION ###
 echo -n "Build dt.img...."
 make exynos3475-j2lte_sea_xsa_00.dtb exynos3475-j2lte_sea_xsa_01.dtb exynos3475-j2lte_sea_xsa_02.dtb exynos3475-j2lte_sea_xsa_03.dtb 
